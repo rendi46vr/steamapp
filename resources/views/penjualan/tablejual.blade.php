@@ -1,0 +1,19 @@
+<table class="table ftc table-responsive-w-100 table-bordered" id="dataCetak">
+    <thead>
+        <tr>
+            <th>No</th>
+            <th>Type</th>
+            <th>tgl</th>
+            <th>Jumlah</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+    </tbody>
+</table>
