@@ -24,7 +24,7 @@ Data Penjualan -
     <div class=" row">
         <div class="col-lg-12 col-md-12">
             <div class="smw-card-header"> <i class="fa fa-wpforms mr-1 i-orange" aria-hidden="true"></i>
-                Data Penjualan
+                Data Transaksi
             </div>
             <div class="d-flex justify-content-end mt-2 mr-2">
                 <input type="text" class="d-inline  search-value mr-1" placeholder="Type to search">

@@ -1,7 +1,9 @@
 @extends('layouts.app')
 
+@section('title')
+Layanan
+@endsection
 @section('style')
-
 @endsection
 @section('content')
 <?php
@@ -14,7 +16,6 @@ function rupiah($angka)
 
 <div class="jtiket">
     <div class="row lg-100">
-
         @foreach($layanan as $t)
         <div class="col-lg-6 col-md-6 col-12">
             <div class="single-tiket">
@@ -26,6 +27,7 @@ function rupiah($angka)
                         <div class="price">
                             <label>Mulai Dari</label>
                             <span class="harga">{{rupiah($t->harga)}}</span>
+                            <label class="mt-1" style="color: #5860fcde;">{{$t->qtyoption}} x cuci</label>
                         </div>
                     </div>
                 </div>
@@ -36,9 +38,9 @@ function rupiah($angka)
                     </span>
                 </div>
                 <div class="tiket-footer">
-                    <span class="available"> @if($t->status >0) Available @else Unavailable @endif</span>
+                    <!-- <span class="available"> @if($t->status >0) Available @else Unavailable @endif</span> -->
                     <div class="buy">
-                        <a href="form-order" class="buy"><i class="fa fa-shopping-cart mr-1" aria-hidden="true"></i>Order</a>
+                        <a href="form-order/{{$t->slug}}" class="buy"><i class="fa fa-shopping-cart mr-1" aria-hidden="true"></i>Order</a>
                     </div>
                 </div>
             </div>

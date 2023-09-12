@@ -61,7 +61,7 @@ body {
  }
 
  div.content{
-    padding: 5vw;
+    padding: 5vw 5vw 0 5vw;
     font-weight: 700;
     margin-top: 3vw;
     width: 100vw;
@@ -132,7 +132,7 @@ body {
  }
  div.tiket-footer a.buy{
    background-color: #969bffde;
-   padding: 1vw 3vw;
+   padding: 1.4vw 3.7vw;
    border-radius: 10px;
    text-decoration: none;
    color: #ffffff;
@@ -144,6 +144,7 @@ body {
  div.tiket-footer a.buy a{
  text-decoration: none;
  color: #fff;
+ height: 40%;
  }
  .i-orange{
    color : rgba(255, 186, 130);
@@ -159,7 +160,7 @@ div.smw-card{
    box-shadow:0px 10px 16px  rgba(57, 100, 229,0.2);
    border-top-right-radius: 10px;
    border-top-left-radius: 10px;
-   padding: 1vw 2vw;
+   padding: 2vw 2vw;
    border-bottom-left-radius: 3px;
    border-bottom-right-radius: 3px;
 
@@ -260,6 +261,9 @@ div.smw-card-body span.harga{
    div.content{
       padding-top: 1vw;
    }
+   span.desc{
+    font-size: 12px;
+   }
    h1.f{
     font-size: 4vw;
    }
@@ -272,7 +276,7 @@ div.smw-card-body span.harga{
      }
    div.jtiket .single-tiket span.title{
     justify-self: start;
-    font-size: 2.5vw;
+    font-size: 16px;
   }
   div.jtiket .single-tiket div.price{
     display:block;
@@ -282,7 +286,7 @@ div.smw-card-body span.harga{
     font-size: 1vw;
   }
   div.jtiket .single-tiket div.price span.harga{ 
-    font-size: 2vw;
+    font-size: 12px;
   }
   div.tiket-footer{
     font-size: 1vw;
@@ -297,7 +301,7 @@ div.smw-card-body span.harga{
     border-radius: 10px;
   }
   div.tiket-footer a.buy{
-    padding: 1vw 3vw;
+    padding: 1.4vw 3.7vw;
     border-radius: 10px;
   }
    /*   d */
@@ -318,7 +322,7 @@ div.smw-card-body span.harga{
   }
   div.smw-card-body span.harga{
     display: block;
-  font-size: 2vw;
+  font-size: 30px;
 
   }
   .form-group label{ 
@@ -374,7 +378,7 @@ div.smw-card-body span.harga{
        }
      div.jtiket .single-tiket span.title{
       justify-self: start;
-      font-size: 2vw;
+      font-size: 18px;
     }
     div.jtiket .single-tiket div.price{
       display:block;
@@ -384,11 +388,11 @@ div.smw-card-body span.harga{
       font-size: 1vw;
     }
     div.jtiket .single-tiket div.price span.harga{ 
-      font-size: 2vw;
+      font-size: 16px;
     }
     div.tiket-footer{
       font-size: 1vw;
-      padding: 4vw 0;
+      padding: 2vw 0;
     }
     div.tiket-footer div.buy{
       display: inline;
@@ -399,7 +403,7 @@ div.smw-card-body span.harga{
       border-radius: 10px;
     }
     div.tiket-footer a.buy{
-      padding: 1vw 2vw;
+      padding: 1.2vw 2.5vw;
       border-radius: 10px;
     }
      /* smw-card */
@@ -420,11 +424,11 @@ div.smw-card-body span.harga{
     }
     div.smw-card-body span.harga{
       display: block;
-    font-size: 2vw;
+    font-size: 30px;
 
     }
     .form-group label{ 
-    font-size: 1.5vw;
+    font-size: 17px;
     }
 
      /*card tgl input */
@@ -550,11 +554,11 @@ div.smw-card-body span.harga{
     }
     div.smw-card-body span.harga{
       display: block;
-    font-size: 2vw;
+    font-size: 35px;
 
     }
     .form-group label{ 
-    font-size: 1.5vw;
+    font-size: 18px;
     }
 
      /*card tgl input */
@@ -582,7 +586,6 @@ div.smw-card-body span.harga{
       /* .date-label:hover {
         background-color: #ff0303fc;
       } */
-
       div.info{
         font-size: 1vw;
       }
@@ -597,7 +600,6 @@ div.smw-card-body span.harga{
    background-color: rgba(57, 100, 229, 0.1);
    padding: 20px;
     bottom: 0;
-   
    text-align: center;
    z-index : 2
  }
@@ -605,4 +607,51 @@ div.smw-card-body span.harga{
   height: 25px;
   padding: 2px;
  }
+
+ .form-control{
+  font-size: 1.3rem;
+ }
+ table tr td{
+  font-weight: 400;
+ }
+
+ .lanjut-order
+  {
+    padding: 15px 15px;
+    color: white;
+    font-size: 18px;
+    border-radius: 13px;
+    font-weight: 550;
+    margin-right: 18px;
+}
+@media (min-width: 1280px) and (max-width: 1366px) {
+
  
+   div.jtiket .single-tiket span.title{
+    justify-self: start;
+    font-size: 2vw;
+  }
+ 
+  div.jtiket .single-tiket div.price span.harga{ 
+    font-size: 1.6vw;
+  }
+
+  span.desc{ 
+    font-size: 1.2vw;
+  }
+}
+@media (min-width: 1367px) and (max-width: 1980px) {
+
+  div.jtiket .single-tiket span.title{
+    justify-self: start;
+    font-size: 2vw;
+  }
+
+  div.jtiket .single-tiket div.price span.harga{ 
+    font-size: 1.6vw;
+  }
+
+  span.desc{ 
+    font-size: 1.2vw;
+  }
+}

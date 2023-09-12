@@ -30,12 +30,10 @@ class order extends FormRequest
     public function rules($rules = [])
     {
         $data = [
-            'name' => 'required',
             'tgl' => '',
-            'wa' => 'required:max:60',
             'email' => 'required|email:dns',
-            "jenis_kendaraan" => "required",
-            "plat" => "required"
+            "plat" => "required",
+            "metpem" => "required"
         ];
 
 
@@ -44,12 +42,11 @@ class order extends FormRequest
     public function messages()
     {
         return [
-            'wa.required' => 'Whatsapp harus didisi',
-            'name.required' => 'Nama wajib disii!',
+            'name.' => 'Nama wajib disii!',
             'email.required' => 'Email Harus Diisi',
             'email.email' => 'Email harus valid',
             "plat.required" => "Plat Harus diisi",
-            "jenis_kendaraan.required" => "Jenis Kendaraan Harus diisi"
+            "metpem.required" => "Metode Pembayaran Harus dipilih"
 
             // 'tgl.required' => "Hanya weekend dan libur nasional",
             // 'tgl.max' => "Hanya weekend dan libur nasional",
@@ -61,7 +58,6 @@ class order extends FormRequest
         return [
             'name' => 'Nama',
             'tgl' => 'Tanggal',
-            'wa' => 'Nomor whatsapp',
             'email' => 'Email',
             "jenis_kendaraan" => "Jenis Kendaraan",
             "plat" => "Plat"

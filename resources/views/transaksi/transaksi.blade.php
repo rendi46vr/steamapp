@@ -1,22 +1,9 @@
 @extends('layouts.app')
 @section('script')
-<script>
-    function disableDates() {
-        var inputDate = document.getElementById("inpdate");
-        var disabledDates = ["2023-06-15", "2023-06-20", "2023-06-25"]; // Tanggal yang ingin dinonaktifkan
 
-        inputDate.addEventListener("input", function() {
-            var selectedDate = inputDate.value;
-            if (disabledDates.includes(selectedDate)) {
-                inputDate.value = ""; // Menghapus tanggal yang tidak diizinkan
-                alert("Tanggal ini tidak tersedia untuk dipilih. Silakan pilih tanggal lain.");
-            }
-        });
-    }
-</script>
 @endsection
 @section('title')
-Data Penjualan -
+Data Transaksi
 @endsection
 @section('content')
 @csrf
@@ -25,11 +12,21 @@ Data Penjualan -
     <div class=" row">
         <div class="col-lg-12 col-md-12">
             <div class="smw-card-header"> <i class="fa fa-wpforms mr-1 i-orange" aria-hidden="true"></i>
-                Data Penjualan
+                Data Transaksi
             </div>
-            <div class="d-flex justify-content-end mt-2 mr-2">
-                <input type="text" class="d-inline  search-value mr-1" placeholder="Type to search">
-                <button class=" mr-1 btn-icon btn btn-light vr-search" data-val="" data-add="searchjual"><i class="fa fa-search" aria-hidden="true"></i></button>
+            <div class="d-flex col-12 justify-content-end mt-2 mr-2">
+                <div class="form-group">
+                    <input style="height: 38px;" type="date" name="first" id="first" class="form-control">
+                </div>
+                <div class="form-group">
+                    <input style="height: 38px;" type="date" name="end" id="end" class="form-control">
+                </div>
+                <div class="form-group">
+                    <input style="height: 38px;" type="text" class="d-inline form-control  search-value mr-1" placeholder="Type to search">
+                </div>
+                <div class="form-group">
+                    <button class=" mr-1 btn-icon btn btn-orange vr-search" data-val="" data-add="searchtransaksi"><i class="fa fa-search" aria-hidden="true"></i></button>
+                </div>
             </div>
             <div class="col-sm-12 d-flex justify-content-center">
                 @if(session('success'))
@@ -37,7 +34,7 @@ Data Penjualan -
                     @endif
             </div>
             <div class="smw-card-body dataTiket table-responsive">
-                {!! $tiket !!}
+                {!! $transaksi !!}
             </div>
         </div>
     </div>
@@ -51,6 +48,8 @@ Data Penjualan -
         var data = {
             _token: tkn(),
             search: $(".search-value").val(),
+            first: $("#first").val(),
+            end: $("#end").val(),
         }
         return data;
     }

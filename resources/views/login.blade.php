@@ -76,6 +76,7 @@
                     <input type="password" class="form-control" name="password" id="password" placeholder="Enter password">
                 </div>
                 <button type="submit" class="btn btn-orange btn-block">Login</button>
+                <a href="{{url('')}}" type="submit" class="btn btn-dark btn-block">Kembali</a>
             </form>
         </div>
     </div>

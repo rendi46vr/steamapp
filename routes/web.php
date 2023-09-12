@@ -8,6 +8,8 @@ use App\Http\Controllers\UserController;
 use App\Models\tgltiket;
 use Illuminate\Http\Request;
 use App\Http\Controllers\DiskonController;
+use App\Http\Controllers\ipaymuController;
+use App\Http\Controllers\layananController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -24,7 +26,7 @@ Route::post('validation', function (Request $request) {
     $class = str_replace('/', '\\', $class);
     $my_request = new $class();
     if ($request->uniq) {
-        $rules = $my_request->rules([0 => $request->tgl, 1 => $request->jenis_tiket]);
+        $rules = $my_request->rules([0 => $request->uniq]);
     } else {
         $rules = $my_request->rules();
     }
@@ -44,9 +46,39 @@ Route::post('validation', function (Request $request) {
     }
 });
 
+Route::get('login', [UserController::class, "login"])->name('login');
+Route::post('proses_login', [UserController::class, "proses_login"]);
+Route::get('logout', [UserController::class, "logout"]);
 Route::get('/', [pembelianCon::class, 'index']);
 Route::get('form-order/{slug}', [pembelianCon::class, 'formorder']);
 Route::post('order', [pembelianCon::class, 'order']);
+Route::post("tambahlayanan", [pembelianCon::class, "tambahlayanan"]);
+Route::GET('payment/{slug}', [ipaymuController::class, 'payment']);
+Route::post('cekTransaksi/{slug}', [ipaymuController::class, 'cek']);
+Route::get('cetaknota/{slug}', [pembelianCon::class, 'cetaknota']);
 
 
-Route::get('tes', [pembelianCon::class, "metgopay"]);
+Route::group(['middleware' => ['auth']], function () {
+    Route::group(['middleware' => ['cek_login']], function () {
+        Route::get('dashboard', [UserController::class, "dashboard"]);
+        Route::get('transaksi', [UserController::class, "transaksi"]);
+        Route::post('pagetransaksi/{page}', [UserController::class, "pagetransaksi"]);
+        Route::post('searchtransaksi/{serach}', [UserController::class, "searchtransaksi"]);
+        Route::post('confirm/{id}', [UserController::class, "confirm"]);
+
+        //layanan
+        Route::get('layanan', [layananController::class, "layanan"]);
+        Route::post('pagelayanan/{page}', [layananController::class, "pagelayanan"]);
+        Route::post('searchlayanan/{serach}', [layananController::class, "searchlayanan"]);
+        Route::post('addlayanan', [layananController::class, "addlayanan"]);
+        Route::post('dellayanan/{id}', [layananController::class, "dellayanan"]);
+        Route::post('editlayanan/{id}', [layananController::class, "editlayanan"]);
+        Route::post('showlayanan/{id}', [layananController::class, "showlayanan"]);
+    });
+});
+Route::get('tes', [ipaymuController::class, "tesorder"]);
+Route::get('print', function () {
+    return view("invoice");
+});
+
+Route::get('nota/{slug}', [pembelianCon::class, "cetaknota"]);

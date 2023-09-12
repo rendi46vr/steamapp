@@ -100,4 +100,15 @@ class tools
         $hasil_rupiah = "Rp " . number_format($rupiah, 0, ',', '.');
         return $hasil_rupiah;
     }
+
+    public static function rupiah($angka, $true = true)
+    {
+        if ($true) {
+
+            $hasil_rupiah = "Rp. " . number_format(round($angka), 0, ',', '.');
+        } else {
+            $hasil_rupiah = number_format(round($angka), 0, ',', '.');
+        }
+        return $hasil_rupiah;
+    }
 }

@@ -14,194 +14,114 @@
             page-break-after: always;
         }
 
-        body {
-            width: 100%;
-            margin-top: -40px;
-            font-size: 10px;
-            font-family: "Roboto";
+        a body {
+            font-size: 6mm;
+            font-weight: 400;
+            line-height: 10mm;
         }
 
-        div.tiket {
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .content {
+            margin-top: 4mm;
         }
 
-        div.tiket .img {
-            display: block;
-            width: 100%;
+        table {
+            margin-top: 4mm;
         }
 
-        div.tiket .img img {
-            display: flex;
-            align-items: center;
-            margin-left: 1mm;
-            margin-left: -2px;
-            margin-bottom: 0px;
-            padding-top: 0px;
-        }
-
-        div.tiket .img p {
-            text-align: center;
-            margin: 1mm 0;
-        }
-
-        div.tiket .img ul {
-            text-align: left;
-            margin-left: -31px
-        }
-
-        div.tiket .img p.title {
-            margin-left: -10px;
+        h2 {
             text-align: center;
         }
 
-        div.logo p.title {
-            margin-left: -10px;
-            margin-top: 1px;
-            margin-right: -10px;
-            text-align: center;
-            font-size: 12px;
-            font-weight: 700;
-            margin-bottom: 0px;
-            padding-bottom: 0;
-        }
-
-        /* table {
-            margin: 0 -35px;
-        }
-
-        table tr td {
-            width: max-content;
-        } */
-
-        h3 {
-            text-align: center;
-            font-size: 9px;
-            margin: 1px 0;
-        }
-
-        div.footer {
-            display: block;
-            position: absolute;
-            margin: 0 -40px -20px -30px;
-            bottom: 2mm;
-        }
-
-        div.contact {
-            display: block;
-            line-height: 1mm;
-            font-size: 6px;
+        .title {
+            font-size: 10mm;
             font-weight: bold;
-            padding-left: 4px;
+            text-align: center;
+            color: coral;
+        }
+
+        .main {
+            margin: 4mm;
+        }
+
+
+        .layanan {
+            width: 100%;
+            border-collapse: collapse;
+            margin: auto;
+            font-family: Arial, sans-serif;
+        }
+
+        .layanan th,
+        .layanan td {
+            border: 1px solid #ddd;
+            padding: 4px;
             text-align: center;
         }
 
-        .right {
-            margin-left: 30mm;
-        }
-
-        .text-red {
-            color: #FF0000;
-        }
-
-        .text-green {
-            color: #008000;
-        }
-
-        .logoimg {
-            width: 28px;
-            margin-left: -9px;
-            margin-top: -5px;
-            height: auto;
-            position: absolute;
-            left: 0;
-        }
-
-        .nourut {
-            width: 30px;
-            margin-right: -9px;
-            margin-top: -29px;
-            height: auto;
-            text-align: right;
-            font-size: 8px;
-            position: absolute;
-            right: 0;
+        .layanan th {
+            background-color: #f2f2f2;
+            /* font-weight: bold; */
         }
     </style>
 </head>
 
 <body>
-    <?php
-
-    use SimpleSoftwareIO\QrCode\Facades\QrCode;
-    use Illuminate\Support\Facades\Storage;
-
-    $i = 0;
-    $count = $tjual->tjual1->count();
-
-    ?>
-    @foreach($tikets as $tiket)
-    <?php $i++; ?>
-    <div class="tiket @if($i != $count)page-break @endif">
-        <div class="logo" style="
-                    margin-left: auto;
-                    margin-right: auto;
-                    text-align: center;
-                    
-                ">
-            <img class="logoimg" src="{{   public_path('/slf.png')}}" alt="">
-            <p class="title">
-                Sriwijaya <br> Lantern Festival 2023
-            </p>
-            <p class="nourut">{{$tiket->nourut}}</p>
-            <p style="margin-top:0px; margin-left: -10; margin-right: -10; font-size:9px; font-weight:bold;"><u> Lapangan Sekolah Maitreyawira </u></p>
+    <div class="content">
+        <div class="top">
+            <div class="title"><b>SteamApp</b></div>
         </div>
-        <!-- format('png')->mergeString(Storage::get('/bb.png'), .3)-> -->
-        <div class="img">
-            <!-- errorCorrection('H')->format('png')->mergeString(Storage::get('/bb.png'), .3)-> -->
-            <img class="center" src="data:image/png;base64,' . {{ base64_encode(QrCode::size(110)->generate($tiket->id)); }} . '" />
-            @if($tjual->tiket_id == 1)
-            <h3 class="type text-green"> Regular Day </h3>
-            @else
-            <h3 class="type text-red"> Premium Day </h3>
-            @endif
-            <div style="padding: 0.5px; border: 1px dashed #000; margin-top: 2px; margin-bottom: 0;margin-left:-10; margin-right:-10;">
-                <!-- <p style=" font-size:7px; font-weight:700;">@if($tjual->tiket_id != 1) Berlaku pada Weekend Day, Libur Nasional, Opening Day dan Closing Day @else Tiket berlaku untuk hari Rabu-Jumat, kecuali hari libur nasional @endif</p> -->
+        <table class="user">
+            <tr>
+                <td>Nama </td>
+                <td>: </td>
+                <td>{{$tjual->name}}</td>
+                <td></td>
+                <td>Tanggal :</td>
+            </tr>
+            <tr>
+                <td>Email </td>
+                <td>: </td>
+                <td>{{$tjual->email}}</td>
+            </tr>
+            <tr>
+                <td>No Whatsapp </td>
+                <td>: </td>
+                <td>{{$tjual->wa}}</td>
+            </tr>
+        </table>
+        <div class="main">
+            <table class="layanan">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Layanan</th>
+                        <th>Type</th>
+                        <th>Harga</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>Paket A</td>
+                        <td>Basic</td>
+                        <td>Rp 100.000</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>Paket B</td>
+                        <td>Premium</td>
+                        <td>Rp 200.000</td>
+                    </tr>
+                    <!-- Tambahkan baris-baris data lainnya sesuai kebutuhan -->
+                </tbody>
 
-                <ul style=" font-size:5px; font-weight:500; "> @if($tjual->tiket_id != 1)
-                    <li>Tiket berlaku 1 orang (mulai pukul 16.00 WIB)</li>
-                    <li> Berlaku setiap hari festival (termasuk hari libur nasional, opening day, dan closing day)</li>
-                    <li>Senin & Selasa TUTUP</li>
-                    <li>Tunjukan E-Ticket ini sebagai tanda bukti masuk festival. Harap simpan dengan baik barcode terlampir. Barcode akan discan saat memasuki lokasi festival.</li>
-                    @else
-
-                    <li>Tiket berlaku 1 orang untuk hari Rabu/Kamis/Jumat (16.00 s.d. 21.00) kecuali hari libur nasional</li>
-                    <li> Senin & Selasa TUTUP
-                    </li>
-                    <li>Tunjukan E-Ticket ini sebagai tanda bukti masuk festival. Harap simpan dengan baik barcode terlampir. Barcode akan discan saat memasuki lokasi festival.
-                    </li>
-                </ul>
-                @endif
-                </p>
-
-            </div>
+            </table>
         </div>
-        <div class="footer">
-            <div class="contact">
-                <!-- <p style="color: forestgreen">Whatsapp</p> -->
-                IG : maitreyawiraschoolpalembang / sriwijayalanternnfestival
-            </div>
-            <!-- <div class="contact right">
-                <p style="line-height: 2mm">
-                    <font style="color: deeppink; line-height: 2mm">Instagram</font>
-                    @maitreyawira <br />
-                    schoolpalembang
-                </p>
-            </div> -->
-        </div>
+
+
+
     </div>
-    @endforeach
+
 </body>
 
 </html>
