@@ -94,6 +94,7 @@ body {
  div.jtiket .single-tiket span.title{
    justify-self: start;
    font-size: 5vw;
+   color: rgb(253, 170, 102);
  }
  div.jtiket .single-tiket div.price{
    display:block;
@@ -118,7 +119,7 @@ body {
  }
  div.tiket-footer{
    font-size: 3vw;
-   padding: 4vw 0;
+   padding: 0vw 1vw 7vw 0;
  }
  div.tiket-footer div.buy{
    display: inline;
@@ -249,15 +250,24 @@ div.smw-card-body span.harga{
   color: #59597C;
 }
 @media (min-width:320px)  { 
-
+  div.scan-member{
+    display: none;
+    }
 }
 @media (min-width:481px)  {
-
+  div.scan-member{
+    display: none;
+    }
  }
 @media (min-width:641px)  { 
-
+  div.scan-member{
+   display: none;
+   }
  }
 @media (min-width:768px)  { 
+  div.scan-member{
+    display: block;
+    }
    div.content{
       padding-top: 1vw;
    }
@@ -268,7 +278,7 @@ div.smw-card-body span.harga{
     font-size: 4vw;
    }
    div.jtiket .single-tiket{
-    height: 18vw; 
+    height: max-content; 
     margin: 20px 0 20px 0;
     }
     .lg-100{
@@ -363,6 +373,9 @@ div.smw-card-body span.harga{
     }
     }
 @media (min-width:1025px) { 
+  div.scan-member{
+    display: block;
+    }
     div.content{
         padding-top: 1vw;
      }
@@ -466,6 +479,9 @@ div.smw-card-body span.harga{
   }
 
 @media (min-width:1281px) { 
+  div.scan-member{
+    display: block;
+    }
   .ft{
     font-size: 1vw;
   }
@@ -595,7 +611,7 @@ div.smw-card-body span.harga{
           font-size: 1vw;
           padding: 4vw 0;
         }
-      }
+    }
  .footer {
    background-color: rgba(57, 100, 229, 0.1);
    padding: 20px;
@@ -648,10 +664,76 @@ div.smw-card-body span.harga{
   }
 
   div.jtiket .single-tiket div.price span.harga{ 
-    font-size: 1.6vw;
+    font-size: 1.3vw;
   }
 
   span.desc{ 
     font-size: 1.2vw;
   }
+}
+
+div.scan-member{
+ text-align: center;
+}
+@keyframes scanAnimation {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+div.scan-member a{
+  font-size: 19px ;
+  font-weight: 600;
+  padding: 9px;
+  animation: scanAnimation 5s infinite alternate;
+
+}
+.steam-app-title {
+  font-size: 36px; /* Ukuran font */
+  font-weight: bold; /* Ketebalan font */
+  text-align: center; /* Pusatkan teks */
+  color: #007acc; /* Warna teks */
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.3); /* Bayangan teks */
+  font-family: 'Arial', sans-serif;
+
+
+}
+.member-code {
+  width: calc(35ch + 30px);
+}
+
+.member-code {
+  font-size: 24px;
+}
+
+.ag-center{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.smid{
+  font-weight: bold;
+  text-align: center;
+  padding: 1.4rem;
+  color: rgb(253, 170, 102);
+}
+
+a#hidenav {
+  display: block; /* Sembunyikan tombol awalnya */
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color:  rgb(253, 170, 102);
+  color: #ffffff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  z-index: 99;
 }

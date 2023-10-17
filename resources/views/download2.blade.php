@@ -13,9 +13,10 @@
 
         body {
             font-family: Arial, sans-serif;
-            width: 80mm;
-            height: 120mm;
+            width: 100%;
+            height: 100%;
             margin: 0;
+            margin-left: -10px;
             padding: 10px;
         }
 
@@ -41,13 +42,47 @@
         }
 
         .img {
-            display: flex;
-            justify-content: center;
+            text-align: center;
         }
 
         .info-table {
             font-size: 12px;
             margin-top: 10px;
+        }
+
+        .img img {
+            text-align: center;
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            padding: 0 20px;
+            text-align: center;
+            margin-left: -20px;
+            margin-right: -20px;
+            /* Mengatur teks ke tengah secara horizontal */
+        }
+
+        .footer::before,
+        .footer::after {
+            content: "";
+            display: table;
+        }
+
+        .footer::after {
+            clear: both;
+            /* Membersihkan elemen setelah elemen .footer */
+        }
+
+        .footer-left {
+            float: left;
+            /* Mengatur elemen kiri ke kiri */
+        }
+
+        .footer-right {
+            float: right;
+            /* Mengatur elemen kanan ke kanan */
         }
     </style>
 </head>
@@ -67,21 +102,27 @@
     <div class="tiket @if($i != $count)page-break @endif">
         <div class="header ">
             <h2>Steam App</h2>
-            <p class="c">Alamat: Jl. Contoh No. 123, Kota Contoh</p>
+            <p class="c">Alamat: Jl. Contoh No. 123, Kota Palembang Sumatra Selatan</p>
         </div>
         <div class="img">
-            {{ QrCode::size(150)->generate($tiket->id)}}
+            <img class="center" src="data:image/png;base64,' . {{ base64_encode(QrCode::size(150)->generate($tiket->id)); }} . '" />
         </div>
 
         <p class="c" style="margin-bottom: 0px;">{{$tjual->np}}</p>
 
-        <p class="c" style="margin-bottom: 0px;"> {{$tjual->plat}}</p>
+        <p class="c" style="margin-bottom: 3px;"> {{$tjual->plat}}</p>
         @if($tiket->status == 1)
         <p class="c" style="font-weight: 600; margin-top: 1px;"> (Terpakai)</p>
         @endif
         <div class="footer">
-            <p><strong>Phone:</strong> <br> 987-654-3210</p>
-            <p><strong>Email :</strong> <br> customer@email.com</p>
+            <div class="footer">
+                <div class="footer-left">
+                    <p><strong>Phone:</strong> <br> 987-654-3210</p>
+                </div>
+                <div class="footer-right">
+                    <p><strong>Email :</strong> <br> customer@email.com</p>
+                </div>
+            </div>
         </div>
     </div>
     @endforeach

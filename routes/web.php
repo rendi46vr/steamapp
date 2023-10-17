@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\DiskonController;
 use App\Http\Controllers\ipaymuController;
 use App\Http\Controllers\layananController;
+use App\Http\Controllers\memberController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -57,7 +59,6 @@ Route::GET('payment/{slug}', [ipaymuController::class, 'payment']);
 Route::post('cekTransaksi/{slug}', [ipaymuController::class, 'cek']);
 Route::get('cetaknota/{slug}', [pembelianCon::class, 'cetaknota']);
 
-
 Route::group(['middleware' => ['auth']], function () {
     Route::group(['middleware' => ['cek_login']], function () {
         Route::get('dashboard', [UserController::class, "dashboard"]);
@@ -74,11 +75,20 @@ Route::group(['middleware' => ['auth']], function () {
         Route::post('dellayanan/{id}', [layananController::class, "dellayanan"]);
         Route::post('editlayanan/{id}', [layananController::class, "editlayanan"]);
         Route::post('showlayanan/{id}', [layananController::class, "showlayanan"]);
+        //member
+        Route::post('addmember/{id}', [memberController::class, "create"]);
     });
 });
+Route::get('tiket/{id}', [pembelianCon::class, "tiket"]);
+
+Route::get('scan', [memberController::class, "scan"]);
+Route::post('memberorder/{id}', [memberController::class, "memberorder"]);
+Route::post('belilagi/{id}', [memberController::class, "belilagi"]);
 Route::get('tes', [ipaymuController::class, "tesorder"]);
+Route::get('navhide', [memberController::class, "navhide"]);
 Route::get('print', function () {
     return view("invoice");
 });
 
 Route::get('nota/{slug}', [pembelianCon::class, "cetaknota"]);
+Route::get('teskirim/{slug}', [pembelianCon::class, "tiketpdf"]);

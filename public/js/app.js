@@ -1,28 +1,4 @@
 
-$(document).on('click', '.reqbayar', function() {
-    const t = $(this);
-        var act = $(this).data('whatever');
-        window.snap.pay(act, {
-            onSuccess: function(result) {
-                alert("Tiket akan dikirimkan di Email");
-            window.location.href = baseUri('download/')+t.data('ind');
-            // location.reload();
-            },
-            onPending: function(result) {
-                /* You may add your own implementation here */
-                alert("Menuggu Pembayaran");
-            // location.reload();
-            },
-            onError: function(result) {
-                alert("payment failed!");
-                trig('#pn', '#bb');
-            },
-            onClose: function() {
-                alert('Pembayaran belom dilakukan');
-            }
-        })
-    
-});
 
 var validated = false;
 var buton_submit = true;
@@ -56,6 +32,7 @@ $(document).ready(function(){
 
         
     })
+
 $(document).on('click', '.showform', function() {
     const ini = $(this)
     const mod = $(ini.data('target'));
@@ -87,13 +64,30 @@ $(document).on('click', "button[type=submit]", function(e) {
 $(document).on('click', ".show-triger", function(e) {
   edit($(this).data('add'), '.show-data');
 });
+
+
+$(document).on("click", ".scan-link",function(){
+    if($(this).hasClass("onshow")){
+        $(this).removeClass("onshow");
+        $(".scan-area").hide();
+    }else{  
+        $(this).addClass("onshow");
+        $(".scan-area").show();
+        $("#memberid").focus()
+    }
+});
+
+
 })
+
 $(document).on('click', ".action", function(e) {
     edit($(this).data('add'), $(this).data('show'));
   });
+ 
+
+
 //paginaition with search
 $(document).on("click",".vr-search", function() {
-    c('ok')
     let search = $(".search-value").val()
     if (search != "") {
         $(".show-sv").text("Hasil Pencarian : " + $(".search-value").val());
@@ -113,7 +107,7 @@ function pagination(ini, data =null){
 $(document).on('click', '.mypagination', function() {
     pagination($(this), searchData() || null)
 })
-function edit(u,c) {
+function    edit(u,c) {
     doReq(u, null, (res) => {
         $(c).html(res)
         // console.log(res)
@@ -258,4 +252,10 @@ if (inp.find('.help-block').length <= 0) {
 }
 function c(data= 'ok'){
 console.log(data)
+}
+function cetakIframe() {
+    const iframe = document.getElementById("myIframe");
+    iframe.style.display = "block"; // Menampilkan iframe sementara
+    iframe.contentWindow.print(); // Mencetak
+    iframe.css("display", "none")
 }

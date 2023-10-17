@@ -83,6 +83,7 @@
 
 <body>
     <div class="background-radial">
+
         <div class=" pr-0">
             <div class="col-12" id="grad1"></div>
             <div class="col-12" id="grad2"></div>
@@ -91,7 +92,10 @@
         </div>
     </div>
     <nav class="navbar navbar-expand-md navbar-light" style="background-color: #e3f2fd75;">
-        <a class="navbar-brand" href="#"><img class="smw-logo" src="{{url('slf-b.png')}}" alt="" srcset=""></a>
+        @if(!Session()->has("navbarhide"))
+        <div class="steam-app-title">
+            Steam App
+        </div>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavId" aria-controls="collapsibleNavId" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -104,6 +108,7 @@
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="{{url('layanan')}}">Layanan</a>
                 </li>
+
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle text-dark" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         Tampil
@@ -115,12 +120,7 @@
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{url('dashboard')}}">Setting</a>
-
-                </li>
-                <li class="nav-item">
                     <a class="nav-link text-dark" href="{{url('logout')}}">Logout</a>
-
                 </li>
                 @else
 
@@ -130,8 +130,8 @@
                 @endif
             </ul>
         </div>
+        @endif
     </nav>
-
 
 
 
@@ -149,7 +149,13 @@
     </footer> -->
     @endif
 
-
+    <a href="{{url('navhide')}}" id="hidenav">
+        @if(!Session()->has("navbarhide"))
+        <i class="fa fa-eye-slash" aria-hidden="true"></i>
+        @else
+        <i class="fa fa-eye" aria-hidden="true"></i>
+        @endif
+    </a>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
     <script src="{{url('js/app.js')}}"></script>

@@ -7,8 +7,8 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            width: 60mm;
-            height: 100mm;
+            width: 80mm;
+            height: 120mm;
             margin: 0;
             padding: 10px;
         }
@@ -23,12 +23,10 @@
             display: none;
         }
 
-        /* Gaya untuk header */
         .header {
             text-align: center;
             font-size: 16px;
             line-height: 1.5px;
-            /* Ukuran font header */
         }
 
         .header p {
@@ -37,23 +35,18 @@
             line-height: 12px;
         }
 
-        /* Gaya untuk alamat */
         .address {
             margin-top: 20px;
             font-size: 12px;
-            /* Ukuran font alamat */
         }
 
-        /* Gaya untuk detail transaksi */
         .transaction-details {
             margin-top: 20px;
             border: 1px solid #ccc;
             padding: 10px;
-            font-size: 14px;
-            /* Ukuran font detail transaksi */
+            font-size: 12px;
         }
 
-        /* Gaya untuk tabel item transaksi */
         .item-table {
             width: 100%;
             border-collapse: collapse;
@@ -65,22 +58,18 @@
             border: 1px solid #ccc;
             padding: 8px;
             text-align: left;
-            font-size: 14px;
-            /* Ukuran font untuk item transaksi */
+            font-size: 12px;
         }
 
-        /* Gaya untuk subtotal */
         .subtotal {
             margin-top: 10px;
             text-align: right;
             font-size: 14px;
-            /* Ukuran font subtotal */
         }
 
         .footer {
             margin-top: 20px;
             font-size: 12px;
-            /* Ukuran font footer */
             display: flex;
             justify-content: space-between;
         }
@@ -100,11 +89,17 @@
     <table class="info-table">
         <tr>
             <td>No Invoice: </td>
-            <td>INV09123123</td>
+            <td>{{$tjual->np}}</td>
         </tr>
         <tr>
             <td>No Plat:</td>
             <td> {{$tjual->plat}}</td>
+        </tr>
+    </table>
+    <table class="info-table">
+        <tr>
+            <td>Sisa Saldo Cuci:</td>
+            <td> {{$tjual->qty - $tjual->qtyterpakai}}x Cuci</td>
         </tr>
     </table>
 
@@ -112,29 +107,34 @@
         <thead>
             <tr>
                 <th>Layanan</th>
+                <th>Qty</th>
                 <th>Harga</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td>Steam Game A</td>
+                <td>{{$tjual->layanan->layanan}}</td>
+                <td>{{$tjual->qty}}x Cuci</td>
                 <td>{{$tjual->totalbayar}}</td>
             </tr>
+
         </tbody>
     </table>
     <p class="subtotal"><strong>Total:</strong> {{$tjual->totalbayar}}</p>
     <table class="item-table">
-        <thead>tjual
+        <thead>
             <tr>
-                <th>Info Lainya</th>
-                <th></th>
+                <th>Tanggal Pemakaian</th>
+                <th> Cuci</th>
             </tr>
         </thead>
         <tbody>
+            @foreach($tjual1 as $t1)
             <tr>
-                <td></td>
-                <td></td>
+                <td>{{ date('d, M Y', strtotime($t1->created_at)) }}</td>
+                <td>1x</td>
             </tr>
+            @endforeach
         </tbody>
     </table>
 

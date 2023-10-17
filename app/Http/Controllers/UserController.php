@@ -19,6 +19,7 @@ use SebastianBergmann\CodeCoverage\Node\CrapIndex;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\sendMail;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Http\Controllers\pembelianCon;
 
 class UserController extends Controller
 {
@@ -41,7 +42,7 @@ class UserController extends Controller
 
         if (Auth::attempt($kredensial)) {
             $request->session()->regenerate();
-            return redirect()->intended('/dashboard');
+            return redirect()->intended('/transaksi');
         }
 
         return redirect("login")->withSuccess('Login Gagal, silahkan coba lagi!.');
@@ -128,7 +129,9 @@ class UserController extends Controller
     }
     public function datapenjualan($msg = null, $page = 1, $search = false)
     {
-        $tiket = tjual::where('status', 2)->where(function ($e) use ($search) {
+        $tiket = tjual1::with("tjual")->whereHas('tjual', function ($query) {
+            $query->where('status', 2);
+        })->where(function ($e) use ($search) {
             if ($search) {
                 $e->where('name', 'like', '%' . session($this->sess)['search'] . '%')
                     ->orwhere('email', 'like', '%' . session($this->sess)['search'] . '%')
@@ -140,6 +143,18 @@ class UserController extends Controller
         })->orderby('created_at', 'desc')->paginate(10, ['*'], null, $page);
         $total = tjual::selectRaw(DB::raw("sum(totalbayar) as tb , sum(qty) tq,count(id) as jum"))->where('status', 2)->first();
         $pagination = tools::ApiPagination($tiket->lastPage(), $page, 'pagejual');
+        // $tiket = tjual::->where('status', 2)->where(function ($e) use ($search) {
+        //     if ($search) {
+        //         $e->where('name', 'like', '%' . session($this->sess)['search'] . '%')
+        //             ->orwhere('email', 'like', '%' . session($this->sess)['search'] . '%')
+        //             ->orwhere('np', 'like', '%' . session($this->sess)['search'] . '%')
+        //             ->orwhere('id', 'like', '%' . session($this->sess)['search'] . '%');
+        //     } else {
+        //         Session::forget($this->sess);
+        //     }
+        // })->orderby('created_at', 'desc')->paginate(10, ['*'], null, $page);
+        // $total = tjual::selectRaw(DB::raw("sum(totalbayar) as tb , sum(qty) tq,count(id) as jum"))->where('status', 2)->first();
+        // $pagination = tools::ApiPagination($tiket->lastPage(), $page, 'pagejual');
         // return print_r($tiket->count());
         return view('penjualan.tablejual', compact('tiket', 'pagination', 'total'))->render();
     }
@@ -169,15 +184,28 @@ class UserController extends Controller
 
     public  function tabletransaksi($page = 1, $search = false)
     {
-        $transaksi = tjual::where(function ($e) use ($search) {
-            if ($search) {
-                $datasearch =  htmlspecialchars(session($this->sess)['search']);
-                $e->where('plat', 'like', '%' . $datasearch . '%')
-                    ->orwhere('email', 'like', '%' . $datasearch . '%')
-                    ->orwhere('np', 'like', '%' . $datasearch . '%')
-                    ->orwhere('wa', 'like', '%' . $datasearch . '%');
-            }
-        });
+        // ->whereHas('tjual', function ($query) {
+        //     $query->where('status', 2)
+        // $transaksi  = tjual1::with("tjual")->whereHas('tjual', function ($e)  use ($search) {
+        //     if ($search) {
+        //         $datasearch =  htmlspecialchars(session($this->sess)['search']);
+        //         $e->where('plat', 'like', '%' . $datasearch . '%')
+        //             ->orwhere('email', 'like', '%' . $datasearch . '%')
+        //             ->orwhere('np', 'like', '%' . $datasearch . '%')
+        //             ->orwhere('wa', 'like', '%' . $datasearch . '%');
+        //     }
+        // });
+
+        $transaksi =
+            tjual::where(function ($e) use ($search) {
+                if ($search) {
+                    $datasearch =  htmlspecialchars(session($this->sess)['search']);
+                    $e->where('plat', 'like', '%' . $datasearch . '%')
+                        ->orwhere('email', 'like', '%' . $datasearch . '%')
+                        ->orwhere('np', 'like', '%' . $datasearch . '%')
+                        ->orwhere('wa', 'like', '%' . $datasearch . '%');
+                }
+            });
         if (session()->has($this->sess)) {
             if (session($this->sess)['first'] && session($this->sess)['end']) {
                 $first = session($this->sess)['first'];
@@ -214,6 +242,8 @@ class UserController extends Controller
             if ($data->status == "pending") {
                 $data->status = "berhasil";
                 $data->save();
+                // kirim pdf ke email
+                $cetak->tiketpdf($data->id);
             }
             return "<div class='p-1 rounded bg-success text-white'>Sucess</div>";
         } catch (\Throwable $th) {

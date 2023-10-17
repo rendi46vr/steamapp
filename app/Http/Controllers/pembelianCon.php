@@ -8,13 +8,17 @@ use App\Models\tjual;
 
 use Illuminate\Support\Facades\Session;
 use App\Http\Controllers\DiskonController;
+use App\Mail\sendMail;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use App\Models\layanan;
 use App\Models\payget;
 use App\Models\payments;
 use App\Models\tjual1;
+use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Mail;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class pembelianCon extends Controller
 {
@@ -38,6 +42,7 @@ class pembelianCon extends Controller
     {
 
         $payment = payget::where("status", 1)->get();
+
 
         try {
             $layanan = $this->tableorder($slug);
@@ -97,9 +102,38 @@ class pembelianCon extends Controller
             $harga =   [$main->harga];
             $amount = $main->harga;
         }
-        $noref = "NOREF" . date("YmdHis");
-        //        dd([$product,$qty]);
+        $isaktif = 0;
+        if ($qty > 1) {
+            $isaktif = 1;
+        }
+        $noref = "INV" . date("YmdHis");
+        try {
+            $finduser = User::where("email", $validasiData["email"])->firstorFail();
+
+            $userid = $finduser->id;
+        } catch (\Throwable $th) {
+            $userid = null;
+        }
+
         if ($validasiData["metpem"] == "tunai") {
+            // return  [
+            //     "id" => Str::uuid(),
+            //     "metpem" => $metode->channel_code,
+            //     "name" => null,
+            //     "np" => $noref,
+            //     "wa" => "089811982121",
+            //     "email" => $validasiData["email"],
+            //     "tgl" => date("Y-m-d"),
+            //     "qty" => $qty[0],
+            //     "qtyterpakai" => 1,
+            //     "layanan_id" => $main->id,
+            //     "isaktif" => $isaktif,
+            //     "totalbayar" => $amount,
+            //     "status" => "pending",
+            //     "jenis_kendaraan" => null,
+            //     "plat" => $validasiData["plat"],
+            //     "user_id" => $userid
+            // ];
             $order = tjual::create([
                 "id" => Str::uuid(),
                 "metpem" => $metode->channel_code,
@@ -108,32 +142,27 @@ class pembelianCon extends Controller
                 "wa" => "089811982121",
                 "email" => $validasiData["email"],
                 "tgl" => date("Y-m-d"),
+                "qty" => $qty[0],
+                "qtyterpakai" => 1,
+                "layanan_id" => $main->id,
+                "isaktif" => $isaktif,
                 "totalbayar" => $amount,
                 "status" => "pending",
                 "jenis_kendaraan" => null,
-                "plat" => $validasiData["plat"]
-
+                "plat" => $validasiData["plat"],
+                "user_id" => $userid
             ]);
-            if ($tambahan) {
-                foreach ($getProduct as $l) {
-                    tjual1::create([
-                        "id" => Str::uuid(),
-                        "tjual_id" => $order->id,
-                        "layanan_id" => $l->id,
-                        "harga" => $l->harga,
-                        "name" => $l->layanan
-                    ]);
-                }
-            } else {
+            for ($i = 1; $i <= $qty[0]; $i++) {
+                $i == 1 ? $sts = 1 :  $sts = 0;
                 tjual1::create([
                     "id" => Str::uuid(),
                     "tjual_id" => $order->id,
                     "layanan_id" => $main->id,
                     "harga" => $main->harga,
-                    "name" => $main->layanan
+                    "name" => $main->layanan,
+                    "status" => $sts
                 ]);
             }
-
             return response()->json([
                 "success" => true,
                 "data" => url("payment/" . $order->id)
@@ -164,29 +193,29 @@ class pembelianCon extends Controller
                 "wa" => "089811982121",
                 "email" => $validasiData["email"],
                 "tgl" => date("Y-m-d"),
+                "qty" => $qty[0],
+                "qtyterpakai" => 1,
+                "isaktif" => $isaktif,
+                "layanan_id" => $main->id,
                 "totalbayar" => $amount,
                 "status" => "pending",
                 "jenis_kendaraan" => null,
-                "plat" => $validasiData["plat"]
+                "plat" => $validasiData["plat"],
+                "user_id" => $userid
 
             ]);
-            if ($tambahan) {
-                foreach ($getProduct as $l) {
-                    tjual1::create([
-                        "id" => Str::uuid(),
-                        "tjual_id" => $order->id,
-                        "layanan_id" => $l->id,
-                        "harga" => $l->harga,
-                        "name" => $l->layanan
-                    ]);
+            $sts = 0;
+            for ($i = 1; $i <= $qty[0]; $i++) {
+                if ($i = 1) {
+                    $sts = 1;
                 }
-            } else {
                 tjual1::create([
                     "id" => Str::uuid(),
                     "tjual_id" => $order->id,
                     "layanan_id" => $main->id,
                     "harga" => $main->harga,
-                    "name" => $main->layanan
+                    "name" => $main->layanan,
+                    "status" => $sts
                 ]);
             }
         } else {
@@ -241,31 +270,73 @@ class pembelianCon extends Controller
     {
         // try {
         $tjual = tjual::findOrFail($slug);
+        $tjual1 = tjual1::where("tjual_id", $tjual->id)->where("status", 1)->get();
+        if (Session()->has("user")) {
+            session()->forget("user");
+        }
         if ($tjual->status == "berhasil") {
-
             $tikets = tjual1::where("layanan_id", $slug)->get();
-            // $pdf = Pdf::loadView('download', compact('tjual', 'tikets'))->setPaper('80mm', '150mm', 'portrait')
-            //     ->setWarnings(false);
-            // Session::forget('bayar');
 
-            // header('Content-Type: application/json');
-            $data = view("invoice", compact("tjual"))->render();
+            $data = view("invoice", compact("tjual", "tjual1"))->render();
 
             return $data;
-
-            //     $tikets = tjual1::where("layanan_id", $slug)->get();
-            //     $pdf = Pdf::loadView('download', compact('tjual', 'tikets'))->setPaper('80mm', '150mm', 'portrait')
-            //         ->setWarnings(false);
-            //     Session::forget('bayar');
-            //     return $pdfContent = $pdf->stream();
-            //     return $pdf;
-            //     $pdfFilename = 'hasil-pembayaran.pdf';
-            //     file_put_contents($pdfFilename, $pdfContent);
-            //     header('Content-Type: application/json');
-            //     echo json_encode($pdfContent);
-            // } else {
         } else {
             return "ok";
+        }
+    }
+    public function tiket($slug)
+    {
+        try {
+            if (auth()->check()) {
+                $tjual = tjual::findOrFail($slug);
+            } else {
+                $tjual = tjual::findOrFail($slug);
+            }
+
+            if ($tjual->status ==  "berhasil") {
+
+                $tikets = tjual1::where("tjual_id", $slug)->get();
+                // if ($tjual->wa == "download2") {
+                //     if ($tjual->info == null) {
+                //         $pdf = Pdf::loadView('download', compact('tjual', 'tikets'))->setPaper('A8', 'portrait')->setWarnings(false);
+                //     } else {
+                //         $pdf = Pdf::loadView('download2', compact('tjual', 'tikets'))->setPaper('A8', 'portrait')->setWarnings(false);
+                //     }
+                // } else {
+                //     $pdf = Pdf::loadView('download', compact('tjual', 'tikets'))->setPaper('A8', 'portrait')->setWarnings(false);
+                // }
+                Session::forget('bayar');
+                // return $pdf->stream('tiket.pdf');tikets
+                return view("download", compact("tjual", "tikets"));
+            } else {
+                return redirect('pembayaran/' . $tjual->id);
+            }
+        } catch (\Throwable $th) {
+            return redirect('/');
+        }
+    }
+
+    public function tiketpdf($slug)
+    {
+        $tjual = tjual::findOrFail($slug);
+
+        if ($tjual->status ==  "berhasil") {
+
+            $tikets = tjual1::where("tjual_id", $slug)->get();
+            $pdf = PDF::loadView('download2', compact('tjual', 'tikets'));
+            $pdf->setPaper(array(0, 0, 250, 380));
+            $tempFilePath = storage_path('app/public/download.pdf');
+            $pdf->save($tempFilePath);
+            $sendnotif = [
+                'title' => 'Pembelian  Berhasil!',
+                'subject' => 'Steam App',
+                'url' => '',
+                'body' => 'Haloo Bapak/ibu , Silahkan download data Tiket Cuci Anda  dibawah: ',
+            ];
+
+            Mail::to($tjual->email)->send(new sendMail($sendnotif, $tempFilePath));
+            unlink($tempFilePath);
+            // return $pdf->stream('download.pdf');
         }
     }
 }

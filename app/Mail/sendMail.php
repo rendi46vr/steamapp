@@ -33,6 +33,6 @@ class sendMail extends Mailable
     {
         return $this->subject($this->data['subject'])
             ->view('tiketmail')
-            ->attachData($this->pdf, 'Tiket slf.pdf', ['mime' => 'application/pdf']);
+            ->attach($this->pdf);
     }
 }

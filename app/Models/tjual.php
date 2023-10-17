@@ -8,13 +8,14 @@ use App\Models\tjual1;
 use App\Models\User;
 use App\Models\payments;
 use App\Models\payget;
+use App\Models\layanan;
 
 class tjual extends Model
 {
     use HasFactory;
 
     public $incrementing = false;
-    protected $fillable = ['id', "metpem", 'np', 'name', 'wa', 'email', 'tgl', 'tgljual', 'qty', 'totalbayar', 'token', 'status', 'tiket_id', "jenis_kendaraan", 'user_id', 'iscetak', "plat"];
+    protected $fillable = ['id', "metpem", 'np', 'name', 'wa', 'email', 'tgl', 'tgljual', 'qty', 'totalbayar', 'token', 'status', 'tiket_id', "jenis_kendaraan", 'user_id', 'iscetak', "plat", "isaktif", 'qtyterpakai', "layanan_id"];
 
 
     public function dataorder()
@@ -29,6 +30,10 @@ class tjual extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+    public function layanan()
+    {
+        return $this->belongsTo(layanan::class);
     }
     public function payget()
     {

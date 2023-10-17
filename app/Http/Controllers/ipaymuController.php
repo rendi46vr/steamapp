@@ -120,7 +120,7 @@ class ipaymuController extends Controller
         return view("payment.payment", compact("pay"));
     }
 
-    public function callback(Request $request)
+    public function callback(Request $request, pembelianCon $cetak)
     {
         // return response($request);
         try {
@@ -131,6 +131,8 @@ class ipaymuController extends Controller
             // }
             $transaksi->status = $request->status;
             $transaksi->save();
+            //kirim email
+            $cetak->tiketpdf($transaksi->id);
             return ":)";
         } catch (\Throwable $th) {
             //throw $th;

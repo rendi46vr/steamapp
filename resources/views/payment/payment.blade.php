@@ -34,7 +34,7 @@ if ($pay->metpem == "tunai") {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A==" crossorigin="anonymous" referrerpolicy="no-referrer">
     <script src="https://code.jquery.com/jquery-3.6.1.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous" type="text/javascript"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script> -->
 
     <style>
         .box-voucher {
@@ -87,13 +87,11 @@ if ($pay->metpem == "tunai") {
                         <div id="cProduct" class="collapse show" data-parent="#product">
                             <div class="card-body" style="padding: 0;">
                                 <ul class="list-group list-group-flush">
-                                    @foreach ($pay->dataorder as $item)
                                     <li class="list-group-item">
-                                        <h6>{{$item->name}}</h6>
-                                        <small> <sup>Rp. </sup> {{ rupiah($item->harga, false)}}</small>
-                                        <span style="float: right;"><sup>Rp. </sup> {{rupiah($item->harga, false)}}</span>
+                                        <h6>{{$pay->layanan->layanan}}</h6>
+                                        <small> <sup>Rp. </sup> {{ rupiah($pay->totalbayar, false)}}</small>
+                                        <span style="float: right;"><sup>Rp. </sup> {{rupiah($pay->totalbayar, false)}}</span>
                                     </li>
-                                    @endforeach
                                     <li id="cFee" class="list-group-item text-muted" style="display:block;">
                                         <span id="fee-title">Biaya Layanan</span><br>
                                         <small id="fee-desc">Admin</small>
@@ -252,7 +250,7 @@ if ($pay->metpem == "tunai") {
 
             <?php }
             ?>
-            window.jsPDF = window.jspdf.jsPDF;
+            // window.jsPDF = window.jspdf.jsPDF;
 
             function cektransaksi() {
                 console.log("ok");
@@ -266,29 +264,20 @@ if ($pay->metpem == "tunai") {
                         $(".info").text("");
                         Swal.fire({
                             icon: 'success',
-                            title: 'Pemayaran Berhasil',
+                            title: 'Pembayaran Berhasil',
+                            timer: 1000,
+                            buttons: false,
                         }).then((result) => {
-                            if (result.isConfirmed) {
-                                // var pdfWindow = window.open("");
-                                // console.log(res.data)
-                                // pdfWindow.document.open();
-                                // pdfWindow.document.write(res.data);
-                                // pdfWindow.document.close();
-                                // pdfWindow.onload = function() {
-                                //     setTimeout(function() {
-                                //         pdfWindow.print();
-                                //     }, 1000);
-                                // };
-                                const iframe = document.getElementById("myIframe"); // Dapatkan elemen iframe menggunakan DOM
-                                const kodeHTML = res.data;
-                                iframe.srcdoc = kodeHTML; // Atur srcdoc dengan kode HTML yang diinginkan
+                            const iframe = document.getElementById("myIframe"); // Dapatkan elemen iframe menggunakan DOM
+                            const kodeHTML = res.data;
+                            iframe.style = "display:block";
 
-                                // Mencetak isi iframe setelah konten dimuat sepenuhnya
-                                iframe.onload = function() {
-                                    iframe.contentWindow.print();
-                                };
-                                // cetakIframe()
-                            }
+                            iframe.srcdoc = kodeHTML; // Atur srcdoc dengan kode HTML yang diinginkan
+
+                            iframe.onload = function() {
+                                iframe.contentWindow.print();
+                            };
+                            iframe.style = "display:none";
                         });
                     }
                 });
@@ -335,12 +324,6 @@ if ($pay->metpem == "tunai") {
         }
 
         // Fungsi untuk mencetak iframe
-        function cetakIframe() {
-            const iframe = document.getElementById("myIframe");
-            iframe.style.display = "block"; // Menampilkan iframe sementara
-            iframe.contentWindow.print(); // Mencetak
-            iframe.css("display", "none")
-        }
     </script>
 </body>
 

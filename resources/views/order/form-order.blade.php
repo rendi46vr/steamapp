@@ -22,15 +22,39 @@ Form Order
                     Info Pelanggan
                 </div>
                 <div class="smw-card-body pt-2">
-                    <div class="form-group">
-                        <label for="">No. Plat Kendaraan</label>
-                        <input type="text" name="plat" id="" class="form-control msgplat" placeholder="No PLAT" id="inputPlat" aria-describedby="helpId">
-                    </div>
+                    <?php
+                    if (session()->has("user")) {
 
-                    <div class="form-group">
-                        <label for="">Email</label>
-                        <input type="email" name="email" id="" class="form-control msgemail" placeholder="example@email.com" id="#layanan_tambahan"" aria-describedby=" helpId">
-                    </div>
+                    ?>
+                        <div class="form-group">
+                            <label for="">No. Plat Kendaraan</label>
+
+
+
+                            <input type="text" name="plat" id="" class="form-control msgplat" value="{{session('user')['plat']}}" placeholder="No PLAT" id="inputPlat" aria-describedby="helpId">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="">Email</label>
+                            <input type="email" name="email" id="" class="form-control msgemail" placeholder="example@email.com" value="{{session('user')['email']}}" id="#layanan_tambahan"" aria-describedby=" helpId">
+                        </div>
+
+                    <?php } else { ?>
+
+                        <div class="form-group">
+                            <label for="">No. Plat Kendaraan</label>
+
+
+
+                            <input type="text" name="plat" id="" class="form-control msgplat" placeholder="No PLAT" id="inputPlat" aria-describedby="helpId">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="">Email</label>
+                            <input type="email" name="email" id="" class="form-control msgemail" placeholder="example@email.com" id="#layanan_tambahan"" aria-describedby=" helpId">
+                        </div>
+
+                    <?php } ?>
                 </div>
             </div>
             <div class="col-lg-6 col-md-6">
@@ -41,7 +65,7 @@ Form Order
                     {!! $layanan !!}
                 </div>
                 <div class="smw-card-header"> <i class="fa fa-credit-card i-orange" aria-hidden="true"></i>
-                    Pilih Metode Pembayaran (VA & Qris)
+                    Pilih Metode Pembayaran (Qris & Tunai)
                 </div>
                 <div class="row mt-2 mb-5 ">
                     @foreach($payment as $p)
