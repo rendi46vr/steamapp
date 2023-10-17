@@ -51,13 +51,14 @@ class memberController extends Controller
     public function memberorder($id, pembelianCon $pc)
     {
         try {
-            $tjual1 = tjual1::find($id);
+            $tjual1 = tjual1::where('id', $id)->where("status", 0)->firstorFail();
+
             try {
                 $tjual = tjual::where("id", $tjual1->tjual_id)->where("isaktif", 1)->firstOrFail();
                 $main = layanan::find($tjual->layanan_id);
                 $tjual->qtyterpakai = $tjual->qtyterpakai + 1;
                 $tjual->save();
-                if ($tjual->qty >= $tjual->qtyterpakai) {
+                if ($tjual->qtyterpakai >= $tjual->qty) {
                     $tjual->isaktif = 0;
                     $tjual->save();
                 }
@@ -70,7 +71,7 @@ class memberController extends Controller
                 ]);
             } catch (\Throwable $th) {
                 $tjual = tjual::with("layanan")->where("tjual_id", $tjual1->tjual_id)->latest()->first();
-                Session::put("user", ["uid" => "", "plat" => $tjual->plat, "email" => $tjual->email, "latest" => $tjual->layanan->slug]);
+                Session::put("user", ["uid" => "", "plat" => $tjual->plat, "email" => $tjual->email, "wa" => $tjual->wa, "latest" => $tjual->layanan->slug]);
                 return response()->json([
                     "success" => false,
                     "lanjut" => true,

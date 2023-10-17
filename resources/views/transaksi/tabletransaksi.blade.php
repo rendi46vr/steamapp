@@ -11,12 +11,13 @@ use App\Tools\tools;
             <th>Pelanggan</th>
             <th>Email</th>
             <th>Pembayaran</th>
-            <!-- <th>Saldo Awal</th> -->
+            <th>Waktu Order</th>
             <th>Saldo cuci</th>
             <th>Saldo terpakai</th>
-            <!-- <th>Biaya Admin</th> -->
+            <th>SIP (Kasir) </th>
+            <th>Jumlah</th>
             <th>Status</th>
-            <th>Action</th>
+            <th>Detail</th>
         </tr>
     </thead>
     <tbody>
@@ -33,8 +34,12 @@ use App\Tools\tools;
             </td>
             <td>{{$t->email}}</td>
             <td>{{$t->payget->channel_description}}</td>
+            <td>{{$t->created_at}}</td>
             <td>{{$t->qty}}</td>
             <td>{{$t->qtyterpakai}}</td>
+            <td>@if($t->sip === 0 ) Siang @elseif($t->sip === 1) Malam @elseif($t->sip === 3) Middle @endif @if($t->by) ({{$t->by->name}}) @endif</td>
+            <td>{{tools::rupiah($t->totalbayar)}}</td>
+
             <!-- <td>{{ tools::rupiah($t->totalbayar)}}</td> -->
             <?php
             if (isset($t->payment)) {
@@ -61,18 +66,26 @@ use App\Tools\tools;
                 @endif
             </td>
             <td>
+                <div class="p-1 detail rounded bg-primary text-white max-content pointer d-inline " data-add="detail/{{$t->id}}" data-plat="{{$t->plat}}" data-toggle="modal" data-target="#detail" title="Detail"><i class="fa fa-list-alt" aria-hidden="true"></i></div>
+            </td>
+            <!-- <td>
                 @if($t->user_id == null)
                 <div class=" p-1 rounded bg-secondary text-white pointer createmember" data-add="addmember/{{$t->id}}" data-show=".dataTransaksi"><i class="fa fa-address-card" aria-hidden="true"></i> Buat Member</div>
                 @endif
-            </td>
-
-        </tr>
-        <tr>
-            <td></td>
-            <td colspan=""></td>
-
+            </td> -->
         </tr>
         @endforeach
+        <tr>
+            <th rowspan="2"></th>
+            <th colspan="4" rowspan="2" style="vertical-align: middle;">Total</th>
+            <th colspan="2">Tunai</th>
+            <th colspan="2">{{tools::rupiah($tunai)}}</th>
+            <th colspan="2" rowspan="2" style="vertical-align: middle;">{{tools::rupiah($tunai + $qris)}}</th>
+        </tr>
+        <tr>
+            <th colspan="2">Qris</th>
+            <th colspan="2">{{tools::rupiah($qris)}} </th>
+        </tr>
     </tbody>
 </table>
 

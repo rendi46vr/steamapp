@@ -1,3 +1,7 @@
+<?php
+
+use App\Tools\tools;
+?>
 <!DOCTYPE html>
 <html>
 
@@ -7,10 +11,17 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            width: 80mm;
+            width: 55mm;
             height: 120mm;
             margin: 0;
-            padding: 10px;
+            padding: 0px;
+        }
+
+        @media print {
+            body {
+                margin: 0 !important;
+                padding: 0 !important;
+            }
         }
 
         body::before {
@@ -25,30 +36,36 @@
 
         .header {
             text-align: center;
-            font-size: 16px;
+            font-size: 14px;
             line-height: 1.5px;
         }
 
+        .header img {
+            height: 20px;
+            width: auto;
+            text-align: center;
+        }
+
         .header p {
-            font-size: 12px;
+            font-size: 10px;
             margin-bottom: 20px;
-            line-height: 12px;
+            line-height: 10px;
         }
 
         .address {
             margin-top: 20px;
-            font-size: 12px;
+            font-size: 10px;
         }
 
         .transaction-details {
             margin-top: 20px;
             border: 1px solid #ccc;
             padding: 10px;
-            font-size: 12px;
+            font-size: 10px;
         }
 
         .item-table {
-            width: 100%;
+            width: 98%;
             border-collapse: collapse;
             margin-top: 20px;
         }
@@ -58,32 +75,32 @@
             border: 1px solid #ccc;
             padding: 8px;
             text-align: left;
-            font-size: 12px;
+            font-size: 10px;
         }
 
         .subtotal {
             margin-top: 10px;
             text-align: right;
-            font-size: 14px;
+            font-size: 12px;
         }
 
         .footer {
             margin-top: 20px;
-            font-size: 12px;
+            font-size: 10px;
             display: flex;
             justify-content: space-between;
         }
 
         .info-table {
-            font-size: 12px;
+            font-size: 10px;
         }
     </style>
 </head>
 
 <body>
     <div class="header">
-        <h2>Steam App</h2>
-        <p>Alamat: Jl. Contoh No. 123, Kota Contoh</p>
+        <img src="{{url('logo.png')}}" alt="">
+        <p>Alamat: Jl. Angkatan 45, Lorok Pakjo, Kec. Ilir Bar. I, Kota Palembang, Sumatera Selatan 30137</p>
     </div>
 
     <table class="info-table">
@@ -102,7 +119,6 @@
             <td> {{$tjual->qty - $tjual->qtyterpakai}}x Cuci</td>
         </tr>
     </table>
-
     <table class="item-table">
         <thead>
             <tr>
@@ -115,12 +131,19 @@
             <tr>
                 <td>{{$tjual->layanan->layanan}}</td>
                 <td>{{$tjual->qty}}x Cuci</td>
-                <td>{{$tjual->totalbayar}}</td>
+                <td>{{ tools::rupiah($tjual->dataorder->harga - $tjual->dataorder->diskon, false)}}</td>
             </tr>
+            @foreach($addon as $ao)
+            <tr>
+                <td>{{$ao->layanantambahan->layanan}}</td>
+                <td>-</td>
+                <td>{{ tools::rupiah($ao->harga - $ao->diskon, false)}}</td>
+            </tr>
+            @endforeach
 
         </tbody>
     </table>
-    <p class="subtotal"><strong>Total:</strong> {{$tjual->totalbayar}}</p>
+    <p class="subtotal"><strong>Total:</strong> {{tools::rupiah($tjual->totalbayar)}}</p>
     <table class="item-table">
         <thead>
             <tr>
@@ -131,7 +154,7 @@
         <tbody>
             @foreach($tjual1 as $t1)
             <tr>
-                <td>{{ date('d, M Y', strtotime($t1->created_at)) }}</td>
+                <td>{{ date('d, M Y', strtotime($t1->updated_at)) }}</td>
                 <td>1x</td>
             </tr>
             @endforeach
@@ -139,8 +162,8 @@
     </table>
 
     <div class="footer">
-        <p><strong>Phone:</strong> <br> 987-654-3210</p>
-        <p><strong>Email :</strong> <br> customer@email.com</p>
+        <p><strong>Phone:</strong> <br> {{$tjual->wa}}</p>
+        <p><strong>Email :</strong> <br> {{$tjual->email}}</p>
     </div>
 
 </body>

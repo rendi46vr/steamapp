@@ -16,14 +16,14 @@ function rupiah($angka)
     <tbody>
         <tr>
             <td>1</td>
-            <td>{{$layanan->layanan}}</td>
-            <td>@if($layanan->type == 0 ) Layanan Utama @endif</td>
-            <td>{{rupiah($layanan->harga -  $layanan->diskon)}}</td>
+            <td>{{$tjual->dataorder->name}}</td>
+            <td> Layanan Utama </td>
+            <td>{{rupiah($tjual->dataorder->harga -  $tjual->dataorder->diskon)}}</td>
         </tr>
-        @foreach($tambahan as $l)
+        @foreach($tjual->addon as $l)
         <tr>
             <td>{{$loop->iteration+1}}</td>
-            <td>{{$l->layanan}}</td>
+            <td>{{$l->layanantambahan->layanan}}</td>
             <td>Layanan Tambahan</td>
             <td>{{rupiah($l->harga - $l->diskon )}}</td>
         </tr>
@@ -33,7 +33,7 @@ function rupiah($angka)
         <tr>
             <th></th>
             <th colspan="2">Sub Total</th>
-            <th colspan="2">{{rupiah($tambahan->sum("harga") - $tambahan->sum("diskon") + $layanan->harga - $layanan->diskon)}}</th>
+            <th colspan="2">{{rupiah($tjual->addon->sum("harga") - $tjual->addon->sum("diskon") + $tjual->dataorder->harga - $tjual->dataorder->diskon)}}</th>
         </tr>
     </tfoot>
 </table>

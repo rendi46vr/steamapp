@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class addlayanan extends FormRequest
+class editlayanan extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -40,7 +40,6 @@ class addlayanan extends FormRequest
             'harga.required' => 'Harga Wajib Disi',
             'diskon.lt' => 'Diskon harus dibawah harga',
             'qty.required' => 'Qty Wajib Disi',
-
             // 'tgl.required' => "Hanya weekend dan libur nasional",
             // 'tgl.max' => "Hanya weekend dan libur nasional",
         ];

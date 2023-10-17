@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class addlayanan extends FormRequest
+class editlayanantambahan extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,10 +25,9 @@ class addlayanan extends FormRequest
     {
         $data = [
             'layanan' => 'required|max:255',
-            'deskripsi' => 'required',
             'harga' => 'required:number:max:20',
-            'diskon' => 'numeric|lt:harga',
-            'qtyoption' => 'required:number:max:99',
+            'diskon' => 'numeric|lte:harga',
+
         ];
         return $data;
     }
@@ -36,10 +35,9 @@ class addlayanan extends FormRequest
     {
         return [
             'layanan.required' => 'Layanan Wajib Disi',
-            'deskripsi.required' => 'Deskripsi Wajib Disi',
             'harga.required' => 'Harga Wajib Disi',
-            'diskon.lt' => 'Diskon harus dibawah harga',
-            'qty.required' => 'Qty Wajib Disi',
+            'diskon.lt' => 'Diskon Tidak boleh melebihi harga',
+
 
             // 'tgl.required' => "Hanya weekend dan libur nasional",
             // 'tgl.max' => "Hanya weekend dan libur nasional",
@@ -50,10 +48,9 @@ class addlayanan extends FormRequest
     {
         return [
             'layanan' => 'Layanan',
-            'deskripsi' => 'Deskripsi',
             'harga' => 'Harga',
             'diskon' => 'Diskon',
-            'qty' => 'Qty',
+
         ];
     }
 }

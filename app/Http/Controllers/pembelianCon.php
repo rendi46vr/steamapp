@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\tiket;
 use App\Models\tjual;
 
 use Illuminate\Support\Facades\Session;
@@ -18,7 +17,9 @@ use App\Models\tjual1;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Mail;
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use App\Models\layanantambahan;
+use App\Models\tjual2;
+use Illuminate\Support\Facades\Auth;
 
 class pembelianCon extends Controller
 {
@@ -35,20 +36,19 @@ class pembelianCon extends Controller
             }
             return redirect('pembayaran/' . session::get('bayar'));
         }
-        $layanan = layanan::where("type", 0)->get();
+        $layanan = layanan::where("type", 0)->where('isaktif', 1)->get();
         return view('index', compact('layanan'));
     }
     public function formorder($slug)
     {
 
         $payment = payget::where("status", 1)->get();
-
-
         try {
             $layanan = $this->tableorder($slug);
             Session(["order" => $slug]);
             $tambahan = layanan::where("type", ">", 0)->get();
-            return view('order.form-order', compact("tambahan", "layanan", "slug", "payment"));
+            $lb = layanantambahan::where("isaktif", 1)->get();
+            return view('order.form-order', compact("tambahan", "layanan", "slug", "payment", "lb"));
         } catch (\Throwable $th) {
             return redirect("/");
         }
@@ -58,49 +58,83 @@ class pembelianCon extends Controller
     {
         $layanan = layanan::where("slug", $slug)->first();
         array_push($layanan_tambahan, $layanan->id);
-
-        $tambahan = layanan::wherein("id", $layanan_tambahan)->get();
-
-        return view('order.table-order', compact("tambahan"))->render();
+        $tambahan = layanantambahan::wherein("id", $layanan_tambahan)->get();
+        return view('order.table-order', compact("tambahan", "layanan"))->render();
     }
 
     public function order(Request $request, ipaymuController $ip)
     {
         $validasiData = $request->validate([
             'tgl' => '',
+            'wa' => 'required|numeric',
             'email' => 'required:email:dns',
             "plat" => "required",
             "metpem" => "required",
         ]);
+        $lastRecord = tjual::latest()->first();
+        if (strtoupper($validasiData["plat"]) == $lastRecord->plat) {
+            $createdAt = Carbon::parse($lastRecord->created_at);
+            $now = Carbon::now();
+            if ($createdAt->diffInMinutes($now) < 5) {
+                return response()->json([
+                    "success" => true,
+                    "data" => url("payment/" . $lastRecord->id)
+                ]);
+            }
+        }
+
         $main = layanan::where("slug", Session("order"))->first();
 
         $metode = payget::where("channel_code", $validasiData["metpem"])->first();
         $tambahan = false;
         $lt = [];
         $lt[] = $main->id;
+        //cek sip
 
+        $jam = Carbon::now()->format('Y-m-d H:i:s');
+        $sip = null; // Inisialisasi variabel $sip
+        $waktu = Carbon::parse($jam);
+        if ($waktu->isBetween('7:00', '15:30')) {
+            $sip = '0';
+        } elseif ($waktu->isBetween('15:31', '23:59')) {
+            $sip = '1';
+        }
 
-
-        if ($request->layanan_tambahan) {
-            $addlt = $request->layanan_tambahan;
-            $tambahan = true;
-            if (is_array($addlt)) {
-                array_push($addlt, $main->id);
-                $lt = $addlt;
-            } else {
-                array_push($lt, $addlt);
+        if (auth()->user()) {
+            if (auth()->user()->sip == "3") {
+                if ($waktu->isBetween('11:00', '20:00')) {
+                    $sip = '3';
+                }
             }
-            $getProduct = layanan::wherein("id", $lt)->get();
+        }
 
+
+        if ($request->addon) {
+            $addlt = $request->addon;
+            $tambahan = true;
+            if (!is_array($addlt)) {
+                $addlt = [$addlt];
+            }
+
+
+            $getProduct = layanantambahan::wherein("id", $addlt)->get();
+            // return $getProduct->sum("harga") + $main->harga;
             $product = $getProduct->pluck("layanan")->toArray();
-            $qty =   $getProduct->pluck("qtyoption")->toArray();
+            array_push($product, $main->layanan);
+            $qtyoption =   $getProduct->pluck("qtyoption")->toArray();
+            $count = count($product);
+            $qty = [];
+            for ($i = 1; $i < $count; $i++) {
+                array_push($qty, 1);
+            }
             $harga =   $getProduct->pluck("harga")->toArray();
-            $amount = $getProduct->sum("harga");
+            array_push($harga, $main->harga);
+            $amount = ($getProduct->sum("harga") - $getProduct->sum("diskon")) + ($main->harga - $main->diskon);
         } else {
             $product = [$main->layanan];
             $qty =   [$main->qtyoption];
-            $harga =   [$main->harga];
-            $amount = $main->harga;
+            $harga =   [($main->harga - $main->diskon)];
+            $amount = ($main->harga - $main->diskon);
         }
         $isaktif = 0;
         if ($qty > 1) {
@@ -109,59 +143,60 @@ class pembelianCon extends Controller
         $noref = "INV" . date("YmdHis");
         try {
             $finduser = User::where("email", $validasiData["email"])->firstorFail();
-
             $userid = $finduser->id;
         } catch (\Throwable $th) {
             $userid = null;
         }
 
         if ($validasiData["metpem"] == "tunai") {
-            // return  [
-            //     "id" => Str::uuid(),
-            //     "metpem" => $metode->channel_code,
-            //     "name" => null,
-            //     "np" => $noref,
-            //     "wa" => "089811982121",
-            //     "email" => $validasiData["email"],
-            //     "tgl" => date("Y-m-d"),
-            //     "qty" => $qty[0],
-            //     "qtyterpakai" => 1,
-            //     "layanan_id" => $main->id,
-            //     "isaktif" => $isaktif,
-            //     "totalbayar" => $amount,
-            //     "status" => "pending",
-            //     "jenis_kendaraan" => null,
-            //     "plat" => $validasiData["plat"],
-            //     "user_id" => $userid
-            // ];
             $order = tjual::create([
                 "id" => Str::uuid(),
                 "metpem" => $metode->channel_code,
                 "name" => null,
                 "np" => $noref,
-                "wa" => "089811982121",
+                "wa" => $validasiData["wa"],
                 "email" => $validasiData["email"],
                 "tgl" => date("Y-m-d"),
-                "qty" => $qty[0],
+                "qty" => $main->qtyoption,
                 "qtyterpakai" => 1,
                 "layanan_id" => $main->id,
                 "isaktif" => $isaktif,
                 "totalbayar" => $amount,
                 "status" => "pending",
                 "jenis_kendaraan" => null,
-                "plat" => $validasiData["plat"],
-                "user_id" => $userid
+                "plat" =>  strtoupper($validasiData["plat"]),
+                "user_id" => $userid,
+                "sip" => $sip
             ]);
-            for ($i = 1; $i <= $qty[0]; $i++) {
-                $i == 1 ? $sts = 1 :  $sts = 0;
+            $sts = 0;
+            for ($i = 1; $i <= $main->qtyoption; $i++) {
+                if (Auth::user()) {
+                    $i == 1 ? $sts = 1 :  $sts = 0;
+                }
                 tjual1::create([
                     "id" => Str::uuid(),
                     "tjual_id" => $order->id,
                     "layanan_id" => $main->id,
                     "harga" => $main->harga,
+                    "diskon" => $main->diskon,
                     "name" => $main->layanan,
                     "status" => $sts
                 ]);
+            }
+            if ($tambahan) {
+                foreach ($getProduct as $gp) {
+                    tjual2::create([
+                        "id" => Str::uuid(),
+                        "tjual_id"  => $order->id,
+                        "layanantambahan_id" => $gp->id,
+                        "harga" => $gp->harga,
+                        "diskon" => $gp->diskon
+                    ]);
+                }
+            }
+            if (Auth::user()) {
+                $order->input_by = auth()->user()->id;
+                $order->save();
             }
             return response()->json([
                 "success" => true,
@@ -176,12 +211,10 @@ class pembelianCon extends Controller
             'referenceId' =>  $noref,
             'paymentMethod' => $metode->code,
             'paymentChannel' => $metode->channel_code,
-            'name' => $validasiData["plat"],
-            'phone' =>  "089811982121",
+            'name' => strtoupper($validasiData["plat"]),
+            'phone' =>  $validasiData["wa"],
             'email' => $validasiData["email"]
         ]);
-
-
         if ($reqPayment["Status"] == 200) {
             $createPayment = $reqPayment["Data"];
             $payment = payments::create($createPayment);
@@ -190,39 +223,56 @@ class pembelianCon extends Controller
                 "metpem" => $metode->channel_code,
                 "name" => null,
                 "np" => $noref,
-                "wa" => "089811982121",
+                "wa" => $validasiData["wa"],
                 "email" => $validasiData["email"],
                 "tgl" => date("Y-m-d"),
-                "qty" => $qty[0],
+                "qty" => $main->qtyoption,
                 "qtyterpakai" => 1,
                 "isaktif" => $isaktif,
                 "layanan_id" => $main->id,
                 "totalbayar" => $amount,
                 "status" => "pending",
                 "jenis_kendaraan" => null,
-                "plat" => $validasiData["plat"],
-                "user_id" => $userid
-
+                "plat" => strtoupper($validasiData["plat"]),
+                "user_id" => $userid,
+                "sip" => $sip
             ]);
-            $sts = 0;
-            for ($i = 1; $i <= $qty[0]; $i++) {
-                if ($i = 1) {
-                    $sts = 1;
+            for ($i = 1; $i <= $main->qtyoption; $i++) {
+                if (Auth::user()) {
+                    $i == 1 ? $sts = 1 :  $sts = 0;
                 }
                 tjual1::create([
                     "id" => Str::uuid(),
                     "tjual_id" => $order->id,
                     "layanan_id" => $main->id,
                     "harga" => $main->harga,
+                    "diskon" => $main->diskon,
                     "name" => $main->layanan,
                     "status" => $sts
                 ]);
+            }
+            if ($tambahan) {
+                foreach ($getProduct as $gp) {
+
+                    tjual2::create([
+                        "id" => Str::uuid(),
+                        "tjual_id"  => $order->id,
+                        "layanantambahan_id" => $gp->id,
+                        "harga" => $gp->harga,
+                        "diskon" => $gp->diskon
+
+                    ]);
+                }
             }
         } else {
             return response()->json([
                 "success" => false,
                 "data" => []
             ]);
+        }
+        if (Auth::user()) {
+            $order->input_by = auth()->user()->id;
+            $order->save();
         }
         return response()->json([
             "success" => true,
@@ -247,7 +297,6 @@ class pembelianCon extends Controller
     public function tambahlayanan(Request $request)
     {
         $validasiData = $request->validate([
-            "slug" => "required",
             "tambahan" => ""
         ]);
         if ($request->ajax()) {
@@ -257,7 +306,7 @@ class pembelianCon extends Controller
             } else {
                 $array = [];
             }
-            $data =  $this->tableorder($validasiData["slug"], $array);
+            $data =  $this->tableorder(session("order"), $array);
 
             return response()->json([
                 "status" => true,
@@ -275,10 +324,9 @@ class pembelianCon extends Controller
             session()->forget("user");
         }
         if ($tjual->status == "berhasil") {
-            $tikets = tjual1::where("layanan_id", $slug)->get();
+            $addon = tjual2::where("tjual_id", $tjual->id)->get();
 
-            $data = view("invoice", compact("tjual", "tjual1"))->render();
-
+            $data = view("invoice", compact("tjual", "tjual1", 'addon'))->render();
             return $data;
         } else {
             return "ok";
@@ -323,20 +371,48 @@ class pembelianCon extends Controller
         if ($tjual->status ==  "berhasil") {
 
             $tikets = tjual1::where("tjual_id", $slug)->get();
+            $tjual1 = $tikets;
             $pdf = PDF::loadView('download2', compact('tjual', 'tikets'));
             $pdf->setPaper(array(0, 0, 250, 380));
-            $tempFilePath = storage_path('app/public/download.pdf');
+            $tempFilePath = storage_path('app/public/qrcode.pdf');
             $pdf->save($tempFilePath);
+            $addon = tjual2::where("tjual_id", $tjual->id)->get();
+            $nota = PDF::loadView("download", compact("tjual", "tjual1", "addon"));
+            $nota->setPaper(array(0, 0, 250, 580));
+            $tempFilePathnota = storage_path('app/public/nota.pdf');
+            $nota->save($tempFilePathnota);
             $sendnotif = [
                 'title' => 'Pembelian  Berhasil!',
                 'subject' => 'Steam App',
                 'url' => '',
                 'body' => 'Haloo Bapak/ibu , Silahkan download data Tiket Cuci Anda  dibawah: ',
             ];
+            Mail::to($tjual->email)->send(new sendMail($sendnotif, $tempFilePath, $tempFilePathnota));
 
-            Mail::to($tjual->email)->send(new sendMail($sendnotif, $tempFilePath));
             unlink($tempFilePath);
+            unlink($tempFilePathnota);
             // return $pdf->stream('download.pdf');
+        }
+    }
+
+    public function find($id)
+    {
+        $search = htmlspecialchars($id);
+        try {
+            $pelanggan =  tjual::select('wa', 'email')->where('plat',  $search)->firstorFail();
+            return response()->json([
+                "success" => true,
+                "wa" => $pelanggan->wa,
+                "email" => $pelanggan->email,
+
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                "success" => false,
+                "wa" => "",
+                "email" => ""
+
+            ]);
         }
     }
 }

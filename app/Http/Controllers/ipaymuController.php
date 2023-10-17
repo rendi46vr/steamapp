@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\payget;
 use App\Models\pesanan;
 use App\Models\tjual;
+use App\Models\tjual2;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
@@ -59,10 +60,9 @@ class ipaymuController extends Controller
             "va" => env("PAY_VA"),
             "signature" => hash_hmac('sha256', $stringToSign, env("PAY_KEY")),
             "timestamp" => Date('YmdHis')
-        ])->POST(env("PAY_URL") . $url, $body);
+        ])->post(env("PAY_URL") . $url, $body);
 
         $res = json_decode($data->body(), true);
-
         return $res;
     }
 
@@ -85,6 +85,7 @@ class ipaymuController extends Controller
         $body["feeDirection"] =  "BUYER";
 
         $req =  $this->reqIpay($body, "v2/payment/direct");
+        return $req;
 
         if ($req["Status"] == 200) {
             return $req;
@@ -102,11 +103,9 @@ class ipaymuController extends Controller
         $body['notifyUrl']  = url('/ipaymucallback17');
         $body["feeDirection"] =  "BUYER";
         $req =  $this->reqIpay($body, "v2/payment");
-
         if ($req["Status"] == 200) {
             return $req;
         }
-
         if ($req->Status) {
             return json_decode($req->body());
         }
@@ -115,9 +114,11 @@ class ipaymuController extends Controller
 
     public function payment($slug)
     {
-        $pay = tjual::with(["dataorder", "payget", "payment"])->findOrFail($slug);
+        $pay = tjual::with(["dataorder", "payget", "payment", "addon"])->findOrFail($slug);
+
+        $addon = tjual2::with("layanantambahan")->where("tjual_id", $slug)->get();
         // dd($pay->payment);
-        return view("payment.payment", compact("pay"));
+        return view("payment.payment", compact("pay", "addon"));
     }
 
     public function callback(Request $request, pembelianCon $cetak)
@@ -172,5 +173,21 @@ class ipaymuController extends Controller
             $res = array('success' => false, 'message' => 'Gagal');
         }
         return $res;
+    }
+
+    public function test()
+    {
+        // dd($reqPayment = $this->reqPayment([
+        //     'product' => ["tes"],
+        //     'qty' => [1],
+        //     'amount' => 30000,
+        //     'price' => [30000],
+        //     'referenceId' =>  "alsjdaldja",
+        //     'paymentMethod' => "qris",
+        //     'paymentChannel' => "qris",
+        //     'name' => "andfafafd",
+        //     'phone' =>  "081293801312",
+        //     'email' => "asdadasdasddsadssad"
+        // ]));
     }
 }

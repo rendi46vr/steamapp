@@ -66,16 +66,7 @@ $(document).on('click', ".show-triger", function(e) {
 });
 
 
-$(document).on("click", ".scan-link",function(){
-    if($(this).hasClass("onshow")){
-        $(this).removeClass("onshow");
-        $(".scan-area").hide();
-    }else{  
-        $(this).addClass("onshow");
-        $(".scan-area").show();
-        $("#memberid").focus()
-    }
-});
+
 
 
 })
@@ -228,6 +219,52 @@ function doReq(act, data ={_token:tkn()}, callback, load= false, ) {
               }
         }
     });
+}
+function confirm(msg,msgSucess, msgGagal, url, func, tit = "Apakah Kamu Yakin?", data = null, ico="warning"){
+    Swal.fire({
+        title: tit,
+        text: msg,
+        icon: ico,
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ya, Yakin!'
+      }).then((result) => {
+        if (result.isConfirmed) {
+            doReq(url, data, (res) => {
+                if (res.success) {
+                    if(res.swal){
+                    Swal.fire(
+                        'Sukses!',
+                        msgSucess,
+                        'success'
+                    ).then(() => {
+                       func(res)
+                    })
+                }
+                } else {
+                    if(res.swal){
+                    if(res.msg)
+                    Swal.fire(
+                        'Gagal!',
+                        msgGagal,
+                        'error'
+                    )
+                    }
+                }
+            })
+        }
+      })
+}
+function cnota(data){
+    const iframe = document.getElementById("myIframe"); // Dapatkan elemen iframe menggunakan DOM
+    const kodeHTML = data;
+    iframe.style = "display:block";
+    iframe.srcdoc = kodeHTML; // Atur srcdoc dengan kode HTML yang diinginkan
+    iframe.onload = function() {
+        iframe.contentWindow.print();
+    };
+    iframe.style = "display:none";
 }
 function baseUri(uri = ''){
     let url =window.location.origin+"/";

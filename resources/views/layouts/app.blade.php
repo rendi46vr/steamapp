@@ -91,10 +91,10 @@
             <div class="col-12" id="grad4"></div>
         </div>
     </div>
-    <nav class="navbar navbar-expand-md navbar-light" style="background-color: #e3f2fd75;">
+    <nav class="navbar navbar-expand-md navbar-light" style="background-color: #ADD8E6;color:#fff;font-weight:600">
         @if(!Session()->has("navbarhide"))
         <div class="steam-app-title">
-            Steam App
+            <img src="{{url('logo.png')}}" alt="">
         </div>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavId" aria-controls="collapsibleNavId" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -105,22 +105,32 @@
                     <a class="nav-link text-dark" href="{{url('/')}}">Home</a>
                 </li>
                 @if(auth()->user())
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{url('layanan')}}">Layanan</a>
-                </li>
 
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle " style="color: #000;" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Master
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" href="{{url('layanan')}}">Layanan Utama</a>
+                        <a class="dropdown-item" href="{{url('layanantambahan')}}">Layanan Tambahan</a>
+                    </div>
+
+                </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle text-dark" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         Tampil
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" href="{{url('torder')}}">Tampil Order</a>
                         <a class="dropdown-item" href="{{url('transaksi')}}">Tampil Transaksi</a>
-                        <!-- <a class="dropdown-item" href="{{url('penbem')}}">Transaski Gagal</a> -->
+                        <a class="dropdown-item" href="{{url('tgagal')}}">Transaski Gagal</a>
                     </div>
                 </li>
-
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{url('logout')}}">Logout</a>
+                    <a class="nav-link text-dark" href="{{url('/dashboard')}}">Setting</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{url('logout')}}">Logout <i class="fa fa-sign-out" aria-hidden="true"></i></a>
                 </li>
                 @else
 

@@ -31,6 +31,7 @@ class order extends FormRequest
     {
         $data = [
             'tgl' => '',
+            'wa' => 'required|numeric',
             'email' => 'required|email:dns',
             "plat" => "required",
             "metpem" => "required"
@@ -45,6 +46,7 @@ class order extends FormRequest
             'name.' => 'Nama wajib disii!',
             'email.required' => 'Email Harus Diisi',
             'email.email' => 'Email harus valid',
+            'wa.required' => 'Nomor Wa harus Diisi',
             "plat.required" => "Plat Harus diisi",
             "metpem.required" => "Metode Pembayaran Harus dipilih"
 
@@ -58,6 +60,7 @@ class order extends FormRequest
         return [
             'name' => 'Nama',
             'tgl' => 'Tanggal',
+            'wa' => 'Nomor Wa',
             'email' => 'Email',
             "jenis_kendaraan" => "Jenis Kendaraan",
             "plat" => "Plat"

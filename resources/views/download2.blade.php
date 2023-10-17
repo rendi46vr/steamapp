@@ -54,6 +54,12 @@
             text-align: center;
         }
 
+        .header img {
+            height: 30px;
+            width: auto;
+            text-align: center;
+        }
+
         .footer {
             margin-top: 20px;
             font-size: 12px;
@@ -101,8 +107,8 @@
     <?php $i++; ?>
     <div class="tiket @if($i != $count)page-break @endif">
         <div class="header ">
-            <h2>Steam App</h2>
-            <p class="c">Alamat: Jl. Contoh No. 123, Kota Palembang Sumatra Selatan</p>
+            <img src="{{public_path('logo.png')}}" alt="">
+            <p class="c">Jl. Angkatan 45, Lorok Pakjo, Kec. Ilir Bar. I, Kota Palembang, Sumatera Selatan 30137</p>
         </div>
         <div class="img">
             <img class="center" src="data:image/png;base64,' . {{ base64_encode(QrCode::size(150)->generate($tiket->id)); }} . '" />
@@ -117,10 +123,10 @@
         <div class="footer">
             <div class="footer">
                 <div class="footer-left">
-                    <p><strong>Phone:</strong> <br> 987-654-3210</p>
+                    <p><strong>Phone:</strong> <br>{{$tjual->wa}}</p>
                 </div>
                 <div class="footer-right">
-                    <p><strong>Email :</strong> <br> customer@email.com</p>
+                    <p><strong>Email :</strong> <br>{{$tjual->email}}</p>
                 </div>
             </div>
         </div>

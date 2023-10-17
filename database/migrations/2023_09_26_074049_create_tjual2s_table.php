@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateTjual1sTable extends Migration
+class CreateTjual2sTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,14 +13,11 @@ class CreateTjual1sTable extends Migration
      */
     public function up()
     {
-        Schema::create('tjual1s', function (Blueprint $table) {
+        Schema::create('tjual2s', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->char('tjual_id');
-            $table->string('layanan_id');
-            $table->string('name');
-            $table->double('diskon', 20, 2)->default(0);
-            $table->double('harga', 20, 2);
-            $table->tinyInteger('status')->default(0);
+            $table->string('tjual_id');
+            $table->string('layanantambahan_id');
+            $table->double('harga', 20.2);
             $table->timestamps();
         });
     }
@@ -32,6 +29,6 @@ class CreateTjual1sTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('tjual1s');
+        Schema::dropIfExists('tjual2s');
     }
 }

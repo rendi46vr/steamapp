@@ -11,6 +11,8 @@ use App\Http\Controllers\DiskonController;
 use App\Http\Controllers\ipaymuController;
 use App\Http\Controllers\layananController;
 use App\Http\Controllers\memberController;
+use App\Http\Controllers\layanantambahanController;
+use App\Http\Controllers\userCon;
 
 /*
 |--------------------------------------------------------------------------
@@ -58,37 +60,67 @@ Route::post("tambahlayanan", [pembelianCon::class, "tambahlayanan"]);
 Route::GET('payment/{slug}', [ipaymuController::class, 'payment']);
 Route::post('cekTransaksi/{slug}', [ipaymuController::class, 'cek']);
 Route::get('cetaknota/{slug}', [pembelianCon::class, 'cetaknota']);
+Route::post('find/{id}', [pembelianCon::class, 'find']);
 
 Route::group(['middleware' => ['auth']], function () {
     Route::group(['middleware' => ['cek_login']], function () {
-        Route::get('dashboard', [UserController::class, "dashboard"]);
+        Route::get('dashboard', [userCon::class, "index"]);
+
+        //adduser
+        Route::post('adduser', [userCon::class, "adduser"]);
+        Route::post('cpass', [userCon::class, "cpass"]);
+        Route::post('resetpass/{id}', [userCon::class, "resetpassword"]);
+
+        //transaksi Berhasil
         Route::get('transaksi', [UserController::class, "transaksi"]);
         Route::post('pagetransaksi/{page}', [UserController::class, "pagetransaksi"]);
         Route::post('searchtransaksi/{serach}', [UserController::class, "searchtransaksi"]);
         Route::post('confirm/{id}', [UserController::class, "confirm"]);
+        Route::post('detail/{id}', [UserController::class, "detail"]);
+        Route::post('confirmlsg/{id}', [UserController::class, "confirmlsg"]);
+        Route::post('admincek/{slug}', [UserController::class, "admincekproses"]);
 
+        //Tampil Oder
+        Route::get('torder', [UserController::class, "torder"]);
+        Route::post('pagetorder/{page}', [UserController::class, "pagetorder"]);
+        Route::post('searchtorder/{serach}', [UserController::class, "searchtorder"]);
+
+        //Tampil Transaksi Gagal
+        Route::get('tgagal', [UserController::class, "tgagal"]);
+        Route::post('pagetgagal/{page}', [UserController::class, "pagetgagal"]);
+        Route::post('searchtgagal/{serach}', [UserController::class, "searchtgagal"]);
         //layanan
         Route::get('layanan', [layananController::class, "layanan"]);
         Route::post('pagelayanan/{page}', [layananController::class, "pagelayanan"]);
         Route::post('searchlayanan/{serach}', [layananController::class, "searchlayanan"]);
         Route::post('addlayanan', [layananController::class, "addlayanan"]);
         Route::post('dellayanan/{id}', [layananController::class, "dellayanan"]);
-        Route::post('editlayanan/{id}', [layananController::class, "editlayanan"]);
-        Route::post('showlayanan/{id}', [layananController::class, "showlayanan"]);
+        Route::post('editlayanan', [layananController::class, "editlayanan"]);
+        Route::post('lstatus/{id}', [layananController::class, "lstatus"]);
+        //layanan tambahan
+        Route::get('layanantambahan', [layanantambahanController::class, "layanantambahan"]);
+        Route::post('pagelayanantambahan/{page}', [layanantambahanController::class, "pagelayanantambahan"]);
+        Route::post('searchlayanantambahan/{serach}', [layanantambahanController::class, "searchlayanantambahan"]);
+        Route::post('addlayanantambahan', [layanantambahanController::class, "addlayanantambahan"]);
+        Route::post('dellayanantambahan/{id}', [layanantambahanController::class, "dellayanantambahan"]);
+        Route::post('editlayanantambahan', [layanantambahanController::class, "editlayanantambahan"]);
+        // Route::post('showlayanantambahan/{id}', [layanantambahanController::class, "showlayanantambahan"]);
+        Route::post('lbstatus/{id}', [layanantambahanController::class, "lbstatus"]);
         //member
         Route::post('addmember/{id}', [memberController::class, "create"]);
     });
 });
 Route::get('tiket/{id}', [pembelianCon::class, "tiket"]);
-
 Route::get('scan', [memberController::class, "scan"]);
 Route::post('memberorder/{id}', [memberController::class, "memberorder"]);
 Route::post('belilagi/{id}', [memberController::class, "belilagi"]);
 Route::get('tes', [ipaymuController::class, "tesorder"]);
 Route::get('navhide', [memberController::class, "navhide"]);
+Route::get('valhp', [UserController::class, "valhp"]);
 Route::get('print', function () {
     return view("invoice");
 });
-
 Route::get('nota/{slug}', [pembelianCon::class, "cetaknota"]);
 Route::get('teskirim/{slug}', [pembelianCon::class, "tiketpdf"]);
+
+Route::get('test', [ipaymuController::class, "test"]);

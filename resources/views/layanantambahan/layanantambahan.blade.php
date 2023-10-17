@@ -3,7 +3,7 @@
 
 @endsection
 @section('title')
-Layanan Utama
+Layanan Tambahan
 @endsection
 @section('content')
 @csrf
@@ -12,11 +12,11 @@ Layanan Utama
     <div class=" row">
         <div class="col-lg-12 col-md-12">
             <div class="smw-card-header"> <i class="fa fa-wpforms mr-1 i-orange" aria-hidden="true"></i>
-                Layanan Utama
+                Layanan Tambahan
             </div>
             <div class="d-flex justify-content-end mt-2 mr-2">
                 <input type="text" class="d-inline  search-value mr-1" placeholder="Type to search">
-                <button class=" mr-1 btn-icon btn btn-light vr-search" data-val="" data-add="searchlayanan"><i class="fa fa-search" aria-hidden="true"></i></button>
+                <button class=" mr-1 btn-icon btn btn-light vr-search" data-val="" data-add="searchlayanantambahan"><i class="fa fa-search" aria-hidden="true"></i></button>
             </div>
             <div class="col-sm-12 d-flex justify-content-center">
                 @if(session('success'))
@@ -26,7 +26,7 @@ Layanan Utama
             <div class="smw-card-body  table-responsive">
                 <button class="btn btn-orange" data-toggle="modal" data-target="#exampleModal"><i class="fa fa-plus" aria-hidden="true"></i> Tambah</button>
                 <div class="dataTiket mt-2">
-                    {!! $layanan !!}
+                    {!! $layanantambahan !!}
                 </div>
             </div>
         </div>
@@ -36,10 +36,9 @@ Layanan Utama
     function refreshData(res) {
         $(res.parent).html(res.data);
     }
-    // $("input[type=checkbox]").on("click", getChecked);
     $(document).on('click', "input[type=checkbox]", function() {
         let ini = $(this)
-        doReq('lstatus/' + ini.attr("id"), null, function(res) {
+        doReq('lbstatus/' + ini.attr("id"), null, function(res) {
             ini.parent().html(res);
         })
         c($(this).attr("id"))
@@ -68,52 +67,42 @@ Layanan Utama
     })
     $(document).on("click", ".modalshow", function() {
         const ini = $(this)
-        $("#namalayanan").val(ini.data("name"))
+        $("#editname").val(ini.data("name"))
         $("#editharga").val(ini.data("harga"))
-        $("#editdeskripsi").val(ini.data("deskripsi"))
-        $("#editdiskon").val(ini.data("diskon"))
-        $("#editqtyoption").val(ini.data("qtyoption"))
         $("#ind").val(ini.data("ind"))
+        $("#editdiskon").val(ini.data("diskon"))
 
     })
 </script>
 <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <form id="addlayanan">
+    <form id="addlayanantambahan">
 
         <div class="modal-dialog	modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Tambah </h5>
+                    <h5 class="modal-title" id="exampleModalLabel">Tambah Layanan</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div class="form-group vr-form">
+                    <div class="form-group">
                         <label for="recipient-name" style="font-size: 16px; " class=" col-form-label">Nama Layanan:</label>
                         <input type="text" class="form-control msglayanan" name="layanan" id="layanan">
                     </div>
                     @csrf
-                    <div class="form-group vr-form">
-                        <label for="message-text" style="font-size: 16px; " class=" col-form-label">Deskripsi</label>
-                        <textarea type="text" class="form-control msgdeskripsi" name="deskripsi" id="deskripsi"> </textarea>
-                    </div>
-                    <div class="form-group vr-form">
+                    <div class="form-group">
                         <label for="message-text" style="font-size: 16px; " class=" col-form-label">Harga</label>
                         <input type="number" class="form-control msgharga" name="harga" id="harga">
                     </div>
-                    <div class="form-group vr-form">
+                    <div class="form-group">
                         <label for="message-text" style="font-size: 16px; " class=" col-form-label">Diskon</label>
-                        <input type="number" class="form-control msgdiskon" value="0" name="diskon" id="diskon">
-                    </div>
-                    <div class="form-group vr-form">
-                        <label for="message-text" style="font-size: 16px; " class=" col-form-label">Qty</label>
-                        <input type="number" class="form-control msgqtyoption" name="qtyoption" min="1" value="1" max="99" id="qtyoption">
+                        <input type="number" class="form-control msgdiskon" name="diskon" id="diskon">
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">batal</button>
-                    <button type="submit" class="btn btn-primary resetFalse" form="addlayanan">save</button>
+                    <button type="submit" class="btn btn-primary" form="addlayanantambahan">Tambah</button>
                 </div>
             </div>
         </div>
@@ -121,46 +110,36 @@ Layanan Utama
 </div>
 
 <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
-    <form id="editlayanan">
-
+    <form id="editlayanantambahan">
         <div class="modal-dialog	modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="editModalLabel">Edit </h5>
+                    <h5 class="modal-title" id="editModalLabel">Edit Layanan</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body edit-layanan">
                     <div class="modal-body">
-                        <div class="form-group vr-form">
+                        <div class="form-group">
                             <label for="recipient-name" style="font-size: 16px; " class=" col-form-label">Nama Layanan:</label>
-                            <input type="text" class="form-control msglayanan" name="layanan" id="namalayanan">
+                            <input type="text" class="form-control msglayanan" name="layanan" id="editname">
                             <input type="hidden" class="form-control " name="uniq" id="ind">
                         </div>
                         @csrf
-                        <div class="form-group vr-form">
-                            <label for="message-text" style="font-size: 16px; " class=" col-form-label">Deskriptsi</label>
-                            <textarea type="text" class="form-control msgdeskripsi" name="deskripsi" id="editdeskripsi"> </textarea>
-                        </div>
-                        <div class="form-group vr-form">
+                        <div class="form-group">
                             <label for="message-text" style="font-size: 16px; " class=" col-form-label">Harga</label>
                             <input type="number" class="form-control msgharga" name="harga" id="editharga">
                         </div>
-                        <div class="form-group vr-form">
+                        <div class="form-group">
                             <label for="message-text" style="font-size: 16px; " class=" col-form-label">Diskon</label>
                             <input type="number" class="form-control msgdiskon" name="diskon" id="editdiskon">
                         </div>
-                        <div class="form-group vr-form">
-                            <label for="message-text" style="font-size: 16px; " class=" col-form-label">Qty</label>
-                            <input type="number" class="form-control msgqtyoption" name="qtyoption" min="1" value="1" max="99" id="editqtyoption">
-                        </div>
                     </div>
-
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">batal</button>
-                    <button type="submit" class="btn btn-primary resetFalse" form="editlayanan">save</button>
+                    <button type="submit" class="btn btn-primary resetFalse" form="editlayanantambahan">save</button>
                 </div>
             </div>
         </div>

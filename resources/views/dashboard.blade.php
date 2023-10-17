@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @section('title')
-Setting -
+Settings - SmartWax
 @endsection
 @section('script')
 <script>
@@ -19,115 +19,91 @@ Setting -
 </script>
 @endsection
 @section('content')
-@csrf
-
+@if(auth()->user()->role =="Admin")
 <div class="smw-card">
     <div class=" row">
         <div class="col-lg-5 col-md-5">
             <div class="smw-card-header"> <i class="fa fa-wpforms mr-1 i-orange" aria-hidden="true"></i>
-                Setting Diskon
+                Tambah Pengguna
             </div>
             <div class="msg1" style="display:none;">
             </div>
-            <div class="smw-card-body">
+            <div class="smw-card-body ">
 
-                <form action="" id="adddiskon">
+                <form action="" id="adduser">
                     @csrf
                     <div id="errorContainer" style="display: none;">
                         <ul id="errorList"></ul>
                     </div>
+                    <div class="form-group vr-form row">
+                        <div class="col">
+                            <label style="font-size: 16px;" for="name">Nama:</label>
+                            <input type="text" class="form-control msgname" id="name" name="name">
+                        </div>
+                        <div class="col">
+                            <label style="font-size: 16px;" for="email">Email:</label>
+                            <input type="email" class="form-control msgemail" id="email" name="email">
+                        </div>
+                    </div>
 
                     <div class="form-group vr-form">
-                        <label style="font-size: 16px;" for="jenisTiket">Jenis Tiket:</label>
-                        <select class="form-control msgjenisTiket" id="jenisTiket" name="jenisTiket">
-                            <option value="2">Premium Day</option>
-                            <option value="1">Regular Day</option>
+                        <label style="font-size: 16px;" for="role">Role:</label>
+                        <select class="form-control msgrole" id="role" name="role">
+                            <option value="Admin">Admin</option>
+                            <option value="Staff">Staff</option>
                         </select>
                         <div class="help-block  f12  text-danger with-errors jtt"></div>
                     </div>
-
                     <div class="form-group vr-form">
-                        <label style="font-size: 16px;" for="tanggalMulai">Tanggal Mulai:</label>
-                        <input type="date" class="form-control msgtanggalMulai" id="tanggalMulai" min="2023-07-30" max="2023-09-30" name="tanggalMulai" required>
-                    </div>
-                    <div class="form-group vr-form">
-                        <label style="font-size: 16px;" for="tanggalAkhir">Tanggal Akhir:</label>
-                        <input type="date" class="form-control msgtanggalAkhir" id="tanggalAkhir" min="2023-07-30" max="2023-09-30" name="tanggalAkhir" required>
-                    </div>
-                    <div class="form-group vr-form">
-                        <label style="font-size: 16px;" for="minimalQuantity">Minimal Quantity:</label>
-                        <input type="number" class="form-control msgminimalQuantity" id="minimalQuantity" name="minimalQuantity" required>
-                    </div>
-                    <div class="form-group vr-form row">
-                        <div class="col">
-                            <label style="font-size: 16px;" for="diskonPersen">Diskon Persen:</label>
-                            <input type="number" class="form-control msgdiskonPersen" id="diskonPersen" name="diskonPersen" step="0.01" min="0" max="100">
-                        </div>
-                        <div class="col">
-                            <label style="font-size: 16px;" for="nilaiDiskon">Nilai Diskon:</label>
-                            <input type="number" class="form-control msgnilaiDiskon" id="nilaiDiskon" name="nilaiDiskon" min="0">
-                        </div>
-                    </div>
-                    <div class="form-group vr-form">
-                        <button class="btn btn-orange resetFalse" name="submit" type="submit">Buat</button>
+                        <button class="btn btn-orange resetFalse" name="submit" type="submit">Tambah</button>
                     </div>
                 </form>
             </div>
         </div>
         <div class="col-lg-7 col-md-7">
             <div class="smw-card-header"> <i class="fa fa-wpforms mr-1 i-orange" aria-hidden="true"></i>
-                Data Diskon
+                Data Pengguna
             </div>
-            <div class="smw-card-body table-diskon">
-                {!! $diskon !!}
+            <div class="smw-card-body data-user table-responsive">
+                {!! $users !!}
             </div>
         </div>
 
     </div>
 
 </div>
+@endif
 <div class="smw-card">
     <div class="col-lg-6 col-md-6">
         <div class="smw-card-header"> <i class="fa fa-wpforms mr-1 i-orange" aria-hidden="true"></i>
-            Setting Penjualan Tiket
+            Ubah Password
         </div>
         <div class="smw-card-body">
             <div class="msg" style="display:none;">
             </div>
-            <form id="settiket">
+            <form action="" id="cpass">
                 @csrf
-                <table class="table table-responsive ft table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Paket</th>
-                            <th>Harga</th>
-                            <th>Batas Penjualan</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($data as $d)
-                        <tr>
-                            <td>
-                                {{$d->judul}}
-                            </td>
-                            <td><input type="text" name="harga{{$d->slug}}" value="{{$d->harga}}" class="form-control msgharga{{$d->slug}} m-form col-lg-7 col-md-6 col-sm-5 col-xs-5"></td>
-                            <td><input type="number" name="batas{{$d->slug}}" class="form-control msgbatas{{$d->slug}} m-form col-lg-7 col-md-6 col-sm-5 col-xs-5" size="2" value="{{$d->batas}}"></td>
-                            <td>
-                                <div class="custom-control custom-switch " style="margin-left: auto;">
-                                    <input type="checkbox" class="custom-control-input msgstatus{{$d->slug}}" name="status{{$d->slug}}" value="1" @if($d->status > 0) checked @endif id="{{$d->slug}}">
-                                    <label class="custom-control-label" for="{{$d->slug}}"></label>
-                                </div>
-                            </td>
-                        </tr>
-                        @endforeach
-
-                    </tbody>
-                </table>
-                <div class="form-group">
-                    <button class="btn btn-orange resetFalse" name="submit" type="submit">Simpan</button>
+                <div id="errorContainer" style="display: none;">
+                    <ul id="errorList"></ul>
                 </div>
+                <div class="form-group vr-form">
+                    <label style="font-size: 16px;" for="passwordlama">Password:</label>
+                    <input type="password" class="form-control msgpasswordlama" id="passwordlama" name="passwordlama">
 
+                </div>
+                <div class="form-group vr-form row">
+                    <div class="col-lg-6 col-md-6 col-12">
+                        <label style="font-size: 16px;" for="passbaru">Password Baru:</label>
+                        <input type="password" class="form-control msgpassbaru" id="passbaru" name="passbaru">
+                    </div>
+                    <div class="col-lg-6 col-md-6 col-12">
+                        <label style="font-size: 16px;" for="cpassbaru">Konfirmasi Password Baru:</label>
+                        <input type="password" class="form-control msgcpassbaru" id="cpassbaru" name="cpassbaru">
+                    </div>
+                </div>
+                <div class="form-group vr-form">
+                    <button class="btn btn-orange resetFalse" name="submit" type="submit">Ubah Password</button>
+                </div>
             </form>
         </div>
     </div>
@@ -138,22 +114,26 @@ Setting -
     function refreshData(res) {
         const fs = $('.msg');
         if (res.status) {
-            const fs1 = $('.msg1');
-            fs1.html('<div class="success-message mt-1 mb-1"> Disimpan </div>');
-            fs1.show('fast')
-            setTimeout(function() {
-                fs1.hide('slow')
-            }, 3000);
-
-            $('.table-diskon').html(res.diskon)
-        } else {
-            fs.html('<div class="success-message mt-1 mb-1"> Disimpan </div>');
-            fs.show('fast')
-            setTimeout(function() {
-                fs.hide('slow')
-            }, 3000);
+            if (res.parent == ".data-user") {
+                $(res.parent).html(res.data)
+            } else {
+                if (res.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: res.data,
+                        timer: 2000,
+                        buttons: false,
+                    })
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: res.data,
+                        timer: 2000,
+                        buttons: false,
+                    })
+                }
+            }
         }
-
     }
 </script>
 @endsection

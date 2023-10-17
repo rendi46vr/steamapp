@@ -8,21 +8,17 @@ use App\Tools\tools;
         <tr>
             <th>No</th>
             <th>Layanan</th>
-            <th style="width: 50% !important;">Deskripsi</th>
-            <th>Qty</th>
             <th>Harga</th>
             <th>Diskon</th>
-            <th>status</th>
-            <th>Edit/Hapus</th>
+            <th>Status</th>
+            <th>Action</th>
         </tr>
     </thead>
     <tbody>
-        @foreach($layanan as $t)
+        @foreach($layanantambahan as $t)
         <tr>
             <td>{{$loop->iteration}}</td>
             <td>{{$t->layanan}}</td>
-            <td>{{$t->deskripsi}}</td>
-            <td>{{$t->qtyoption}}</td>
             <td>{{tools::rupiah($t->harga)}}</td>
             <td>{{tools::rupiah($t->diskon)}}</td>
             <td>
@@ -35,10 +31,10 @@ use App\Tools\tools;
                 </div>
             </td>
             <td>
-                <a class=" pointer p-1 rounded bg-primary text-white d-inlline modalshow" data-name="{{$t->layanan}}" data-ind="{{$t->id}}" data-deskripsi="{{$t->deskripsi}}" data-qtyoption="{{$t->qtyoption}}" data-harga="{{$t->harga}}" data-diskon="{{$t->diskon}}" data-toggle="modal" data-target="#editModal"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a> |
+                <a class=" pointer p-1 rounded bg-primary text-white d-inlline modalshow" data-toggle="modal" data-target="#editModal" data-ind="{{$t->id}}" data-harga="{{$t->harga}}" data-diskon="{{$t->diskon}}" data-name="{{$t->layanan}}"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
                 @if(auth()->user()->role =="Admin")
-
-                <a class=" pointer p-1 rounded bg-danger text-white deldata " data-uniq="dellayanan/{{$t->id}}"><i class="fa fa-trash-o" aria-hidden="true"></i></a>
+                |
+                <a class=" pointer p-1 rounded bg-danger text-white deldata " data-uniq="dellayanantambahan/{{$t->id}}"><i class="fa fa-trash-o" aria-hidden="true"></i></a>
                 @endif
             </td>
         </tr>

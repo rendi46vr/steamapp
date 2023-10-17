@@ -23,6 +23,7 @@ class User extends Authenticatable
         'email',
         'password',
         "role",
+        'sip',
         "member_id"
     ];
 
@@ -49,5 +50,9 @@ class User extends Authenticatable
     public function tjual()
     {
         return $this->hasMany(tjual::class, "user_id", "member_id");
+    }
+    public function by()
+    {
+        return $this->hasMany(tjual::class, "input_by", "id");
     }
 }

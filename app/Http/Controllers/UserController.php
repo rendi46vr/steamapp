@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\sendMail;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\pembelianCon;
+use App\Models\layanan;
 
 class UserController extends Controller
 {
@@ -184,38 +185,39 @@ class UserController extends Controller
 
     public  function tabletransaksi($page = 1, $search = false)
     {
-        // ->whereHas('tjual', function ($query) {
-        //     $query->where('status', 2)
-        // $transaksi  = tjual1::with("tjual")->whereHas('tjual', function ($e)  use ($search) {
-        //     if ($search) {
-        //         $datasearch =  htmlspecialchars(session($this->sess)['search']);
-        //         $e->where('plat', 'like', '%' . $datasearch . '%')
-        //             ->orwhere('email', 'like', '%' . $datasearch . '%')
-        //             ->orwhere('np', 'like', '%' . $datasearch . '%')
-        //             ->orwhere('wa', 'like', '%' . $datasearch . '%');
-        //     }
-        // });
-
-        $transaksi =
-            tjual::where(function ($e) use ($search) {
-                if ($search) {
-                    $datasearch =  htmlspecialchars(session($this->sess)['search']);
-                    $e->where('plat', 'like', '%' . $datasearch . '%')
-                        ->orwhere('email', 'like', '%' . $datasearch . '%')
-                        ->orwhere('np', 'like', '%' . $datasearch . '%')
-                        ->orwhere('wa', 'like', '%' . $datasearch . '%');
-                }
-            });
+        $transaksi = tjual::with(['by' => function ($e) {
+            $e->select('id', 'name');
+        }])->where(function ($e) use ($search) {
+            if ($search) {
+                $datasearch =  htmlspecialchars(session($this->sess)['search']);
+                $e->where('plat', 'like', '%' . $datasearch . '%')
+                    ->orwhere('email', 'like', '%' . $datasearch . '%')
+                    ->orwhere('np', 'like', '%' . $datasearch . '%')
+                    ->orwhere('wa', 'like', '%' . $datasearch . '%');
+            }
+        });
         if (session()->has($this->sess)) {
             if (session($this->sess)['first'] && session($this->sess)['end']) {
                 $first = session($this->sess)['first'];
                 $end = session($this->sess)['end'];
                 $transaksi->whereBetween('tgl', [$first, $end]);
             }
+            if (session($this->sess)['sip'] != null) {
+                $transaksi->where('sip', session($this->sess)['sip']);
+            }
+        } else {
+            $transaksi->whereBetween('tgl', [date("Y-m-d"), date("Y-m-d")]);
         }
-        $transaksi = $transaksi->orderby('created_at', 'desc')->paginate(20, ['*'], null, $page);
+        if (auth()->user()->role != "Admin") {
+            $transaksi->where('input_by', auth()->user()->id);
+        }
+        $cut = $transaksi;
+        $tunai = $cut->where("status", "berhasil")->where("metpem", "tunai")->sum("totalbayar");
+        $qris = $cut->where("status", "berhasil")->where("metpem", "qris")->sum("totalbayar");
+        $transaksi = $transaksi->where("status", "berhasil")->orderby('created_at', 'desc')->paginate(20, ['*'], null, $page);
+        // dd($transaksi);
         $pagination = tools::ApiPagination($transaksi->lastPage(), $page, 'pagetransaksi');
-        return view("transaksi.tabletransaksi", compact("transaksi", "pagination"))->render();
+        return view("transaksi.tabletransaksi", compact("transaksi", "pagination", "tunai", "qris"))->render();
     }
 
     public function pagetransaksi($page)
@@ -241,13 +243,311 @@ class UserController extends Controller
             $data =  tjual::findOrFail($id);
             if ($data->status == "pending") {
                 $data->status = "berhasil";
+                if ($data->input_by == null) {
+                    $data->input_by = auth()->user()->id;
+                }
                 $data->save();
                 // kirim pdf ke email
                 $cetak->tiketpdf($data->id);
             }
-            return "<div class='p-1 rounded bg-success text-white'>Sucess</div>";
+            return response()->json([
+                "success" => true,
+                "swal" => true,
+                "data" => "<div class='p-1 rounded max-content bg-success text-white d-inline'>Sucess</div>"
+            ]);
         } catch (\Throwable $th) {
-            return "<div class='p-1 rounded bg-danger text-white'>Failed</div>";
+            return response()->json([
+                "success" => false,
+                "swal" => true,
+            ]);
         }
+    }
+    public function confirmlsg($id, pembelianCon $cetak)
+    {
+        try {
+            $data =  tjual::findOrFail($id);
+            if ($data->status == "pending") {
+                $data->status = "berhasil";
+                $data->save();
+                // kirim pdf ke email
+                $cetak->tiketpdf($data->id);
+            }
+            return response()->json([
+                "success" => true,
+                "swal" => false,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                "success" => true,
+                "swal" => false,
+            ]);
+        }
+    }
+    public function valhp()
+    {
+        $layanan = layanan::where("type", 0)->get();
+        return view('admin.valhp', compact('layanan'));
+    }
+    public function admincekproses($slug)
+    {
+        try {
+            // return 'ok';
+            $tiket = tjual1::with('tjual')->findorFail(trim($slug));
+            $jentiket =  $tiket->tjual->tiket_id == 2 ? "Premium Day" : "Regular Day";
+            $tglpremium = tgltiket::where('status', 2)->pluck('tgl')->toArray();
+            $tglregular = tgltiket::where('status', 1)->pluck('tgl')->toArray();
+            $istgl = false;
+            if ($tiket->status == 0  ||  $tiket->status == 4  ||  $tiket->status == 5) {
+
+                if ($tiket->tjual->tiket_id == 2) {
+                    if (in_array(date('Y-m-d'), $tglpremium)) {
+                        $istgl = true;
+                    } else {
+                        $datatiket = tiket::find(2);
+
+                        if ($datatiket->isallday == 2) {
+                            $istgl = true;
+                        } else {
+                            $istgl = false;
+                        }
+                    }
+                } else {
+                    if (in_array(date('Y-m-d'), $tglregular)) {
+                        $istgl = true;
+                    } else {
+                        $istgl = false;
+                    }
+                }
+            }
+            if ($istgl) {
+                if ($tiket->status == 0  ||  $tiket->status == 4  ||  $tiket->status == 5) {
+                    $tiket->validon = date('Y-m-d  H:i:s');
+                    $tiket->status = 2;
+                    $tiket->save();
+                    $pesan = '1';
+                    $tiket->tjual->tiket_id  == 2 ? $pesan = "Tiket berlaku 1 orang (mulai pukul 16.00 WIB)" : $pesan = "Tiket berlaku 1 orang untuk hari Rabu/Kamis/Jumat (16.00 s.d. 21.00) kecuali hari libur nasional";
+                    return  response()->json([
+                        "status" => 'success',
+                        "jentiket" => $jentiket,
+                        "pesan" => $pesan
+                    ]);
+                } elseif ($tiket->status == 2) {
+                    return  response()->json([
+                        "status" => 'used',
+                    ]);
+                }
+                return  response()->json([
+                    "status" => 'invalid',
+                ]);
+            } else {
+                if ($tiket->status == 2) {
+                    $dateTimeString = $tiket->validon;
+                    $format = 'Y-m-d H:i:s';
+                    $dateTime = Carbon::createFromFormat($format, $dateTimeString);
+                    $formattedDateTime = $dateTime->format('d M Y, H:i A');
+                    $today = false;
+                    if ($dateTime->isToday()) {
+                        $formattedDateTime = "Hari ini Jam " . $dateTime->format('H:i A');
+                        $today = true;
+                    }
+                    return  response()->json([
+                        "status" => 'used',
+                        "pesan" => "Digunakan Pada " . $formattedDateTime,
+                    ]);
+                } else {
+                    if (in_array(date('Y-m-d'), $tglregular)) {
+                        $tiket->validon = date('Y-m-d  H:i:s');
+                        $tiket->status = 2;
+                        $tiket->save();
+                        $pesan = '1';
+                        $tiket->tjual->tiket_id  == 2 ? $pesan = "Tiket berlaku 1 orang (mulai pukul 16.00 WIB)" : $pesan = "Tiket berlaku 1 orang untuk hari Rabu/Kamis/Jumat (16.00 s.d. 21.00) kecuali hari libur nasional";
+                        return  response()->json([
+                            "status" => 'success',
+                            "jentiket" => $jentiket,
+                            "pesan" => $pesan
+                        ]);
+                    } else {
+                        $berlaku = $tiket->tjual->tiket_id == 1 ? "Rabu-Jum'at (Kecuali Libur Nasional)" : "Weekend day & Libur Nasional";
+                        $pesan = '1';
+                        $tiket->tjual->tiket_id == 2 ? $pesan = "Tiket berlaku 1 orang (mulai pukul 16.00 WIB) <br>
+                    
+                    Berlaku setiap hari festival (termasuk hari libur nasional, opening day, dan closing day)" : $pesan = "Tiket berlaku 1 orang untuk hari Rabu/Kamis/Jumat (16.00 s.d. 21.00) Opening Day kecuali hari libur nasional";
+                        return  response()->json([
+                            "status" => 'pending',
+                            "jentiket" => $jentiket,
+                            "pesan" => $pesan
+                        ]);
+                    }
+                }
+            }
+        } catch (\Throwable $th) {
+            function removech($text, $numCharacters)
+            {
+                if ($numCharacters >= 0) {
+                    return substr($text, 0, -$numCharacters);
+                } else {
+                    return $text;
+                }
+            }
+            try {
+                $tiket = tjual1::where("id", 'like', "%" . removech($slug, 4) . "%")->firstOrFail();
+                $jentiket =  $tiket->tjual->tiket_id == 2 ? "Premium Day" : "Regular Day";
+
+                if ($tiket->status == 0  ||  $tiket->status == 4  ||  $tiket->status == 5) {
+                    $tiket->validon = date('Y-m-d  H:i:s');
+                    $tiket->status = 2;
+                    $tiket->save();
+                    $pesan = '1';
+                    $tiket->tjual->tiket_id  == 2 ? $pesan = "Tiket berlaku 1 orang (mulai pukul 16.00 WIB)" : $pesan = "Tiket berlaku 1 orang untuk hari Rabu/Kamis/Jumat (16.00 s.d. 21.00) kecuali hari libur nasional";
+                    return  response()->json([
+                        "status" => 'success',
+                        "jentiket" => $jentiket,
+                        "pesan" => $pesan
+                    ]);
+                } elseif ($tiket->status == 2) {
+                    $dateTimeString = $tiket->validon;
+                    $format = 'Y-m-d H:i:s';
+                    $dateTime = Carbon::createFromFormat($format, $dateTimeString);
+                    $formattedDateTime = $dateTime->format('d M Y, H:i A');
+                    $today = false;
+                    if ($dateTime->isToday()) {
+                        $formattedDateTime = "Hari ini Jam " . $dateTime->format('H:i A');
+                        $today = true;
+                    }
+                    return  response()->json([
+                        "status" => 'used',
+                        "pesan" => "Digunakan Pada " . $formattedDateTime,
+                    ]);
+                } else {
+                    $berlaku = $tiket->tjual->tiket_id == 1 ? "Rabu-Jum'at (Kecuali Libur Nasional)" : "Weekend day & Libur Nasional";
+                    $pesan = '1';
+                    $tiket->tjual->tiket_id == 2 ? $pesan = "Tiket berlaku 1 orang (mulai pukul 16.00 WIB) <br>
+                    Berlaku setiap hari festival (termasuk hari libur nasional, opening day, dan closing day)" : $pesan = "Tiket berlaku 1 orang untuk hari Rabu/Kamis/Jumat (16.00 s.d. 21.00) Opening Day kecuali hari libur nasional";
+                    return  response()->json([
+                        "status" => 'pending',
+                        "jentiket" => $jentiket,
+                        "pesan" => $pesan
+                    ]);
+                }
+            } catch (\Throwable $th) {
+                return  response()->json([
+                    "status" => 'invalid',
+                    "data" => ''
+                ]);
+            }
+        }
+    }
+    //Tampil Transaksi
+
+    public function torder()
+    {
+        Session::forget($this->sess);
+        $transaksi = $this->tabletorder();
+        return view("transaksi.torder", compact("transaksi"))->render();
+    }
+
+
+    public  function tabletorder($page = 1, $search = false)
+    {
+        $transaksi =
+            tjual::where(function ($e) use ($search) {
+                if ($search) {
+                    $datasearch =  htmlspecialchars(session($this->sess)['search']);
+                    $e->where('plat', 'like', '%' . $datasearch . '%')
+                        ->orwhere('email', 'like', '%' . $datasearch . '%')
+                        ->orwhere('np', 'like', '%' . $datasearch . '%')
+                        ->orwhere('wa', 'like', '%' . $datasearch . '%');
+                }
+            });
+        if (session()->has($this->sess)) {
+            if (session($this->sess)['first'] && session($this->sess)['end']) {
+                $first = session($this->sess)['first'];
+                $end = session($this->sess)['end'];
+                $transaksi->whereBetween('tgl', [$first, $end]);
+            }
+        }
+        $transaksi = $transaksi->where("status", "pending")->orderby('created_at', 'desc')->paginate(20, ['*'], null, $page);
+        $pending = true;
+        $pagination = tools::ApiPagination($transaksi->lastPage(), $page, 'pagetorder');
+        return view("transaksi.tabletorder", compact("transaksi", "pagination", "pending"))->render();
+    }
+
+    public function pagetorder($page)
+    {
+        if (!is_numeric($page)) {
+            return $this->tabletorder(1);
+        }
+        if (Session::has($this->sess)) {
+            return $this->tabletorder($page, true);
+        } else {
+            return $this->tabletorder($page);
+        }
+    }
+    public function searchtorder(Request $request)
+    {
+        Session::put($this->sess, $request->all());
+        return $this->tabletorder(1, true);
+    }
+
+    //Transaksi Gagal
+    public function tgagal()
+    {
+        Session::forget($this->sess);
+        $transaksi = $this->tabletgagal();
+        return view("transaksi.tgagal", compact("transaksi"))->render();
+    }
+
+
+    public  function tabletgagal($page = 1, $search = false)
+    {
+        $transaksi =
+            tjual::where(function ($e) use ($search) {
+                if ($search) {
+                    $datasearch =  htmlspecialchars(session($this->sess)['search']);
+                    $e->where('plat', 'like', '%' . $datasearch . '%')
+                        ->orwhere('email', 'like', '%' . $datasearch . '%')
+                        ->orwhere('np', 'like', '%' . $datasearch . '%')
+                        ->orwhere('wa', 'like', '%' . $datasearch . '%');
+                }
+            });
+        if (session()->has($this->sess)) {
+            if (session($this->sess)['first'] && session($this->sess)['end']) {
+                $first = session($this->sess)['first'];
+                $end = session($this->sess)['end'];
+                $transaksi->whereBetween('tgl', [$first, $end]);
+            }
+        }
+        $transaksi = $transaksi->where("status", "expired")->orderby('created_at', 'desc')->paginate(20, ['*'], null, $page);
+        $pending = true;
+        $pagination = tools::ApiPagination($transaksi->lastPage(), $page, 'pagetgagal');
+        return view("transaksi.tabletgagal", compact("transaksi", "pagination", "pending"))->render();
+    }
+
+    public function pagetgagal($page)
+    {
+        if (!is_numeric($page)) {
+            return $this->tabletgagal(1);
+        }
+        if (Session::has($this->sess)) {
+            return $this->tabletgagal($page, true);
+        } else {
+            return $this->tabletgagal($page);
+        }
+    }
+    public function searchtgagal(Request $request)
+    {
+        Session::put($this->sess, $request->all());
+        return $this->tabletgagal(1, true);
+    }
+
+    public function detail($id)
+    {
+        $tjual =  tjual::with('dataorder', 'addon')->where("id", $id)->first();
+        $data =  view('transaksi.tabledetail', compact("tjual"))->render();
+
+        return response()->json([
+            "success" => true,
+            "data" => $data
+        ]);
     }
 }

@@ -49,21 +49,25 @@ if ($pay->metpem == "tunai") {
         .form-check-label {
             font-size: 11px !important;
         }
+
+        .pointer {
+            cursor: pointer;
+        }
     </style>
 </head>
 
 <body class="">
-    <div class="pace pace-inactive">
+    <!-- <div class="pace pace-inactive">
         <div class="pace-progress" data-progress-text="100%" data-progress="99" style="transform: translate3d(100%, 0px, 0px);">
             <div class="pace-progress-inner"></div>
         </div>
         <div class="pace-activity"></div>
-    </div>
+    </div> -->
     <div class="container">
         <div class="row mb-5">
             <div class="col-md-6 col-sm-12 col-12 d-block" style="padding: 30px 0 30px 10px;">
-                <!-- <img src="http://localhost:8000/assets/images/logo.png" style="max-height: 65px;" alt="iPaymu Merchant"> -->
-                <h3> SteamApp</h3>
+                <img src="{{url('/logo.png')}}" style="max-height: 65px;" alt="iPaymu Merchant">
+                <!-- <h3> SteamApp</h3> -->
                 <div class="d-block d-lg-none d-md-none mt-2 ml-1">
                     <h6 class="">rendi</h6>
                 </div>
@@ -89,9 +93,24 @@ if ($pay->metpem == "tunai") {
                                 <ul class="list-group list-group-flush">
                                     <li class="list-group-item">
                                         <h6>{{$pay->layanan->layanan}}</h6>
-                                        <small> <sup>Rp. </sup> {{ rupiah($pay->totalbayar, false)}}</small>
-                                        <span style="float: right;"><sup>Rp. </sup> {{rupiah($pay->totalbayar, false)}}</span>
+                                        @if($pay->dataorder->diskon > 0)
+                                        <small> <sup>Rp. </sup> <s> {{ rupiah($pay->dataorder->harga, false)}} </s></small>
+                                        @else
+                                        <small> <sup>Rp. </sup> {{ rupiah($pay->dataorder->harga, false)}}</small>
+                                        @endif
+                                        <span style="float: right;"><sup>Rp. </sup> {{rupiah($pay->dataorder->harga - $pay->dataorder->diskon, false)}}</span>
                                     </li>
+                                    @foreach($addon as $lb)
+                                    <li class="list-group-item">
+                                        <h6>{{$lb->layanantambahan->layanan}}</h6>
+                                        @if($lb->diskon > 0)
+                                        <small> <sup>Rp. </sup> {{ rupiah($lb->harga, false)}}</small>
+                                        @else
+                                        <small> <sup>Rp. </sup> {{ rupiah($lb->harga - $lb->diskon, false)}}</small>
+                                        @endif
+                                        <span style="float: right;"><sup>Rp. </sup> {{rupiah($lb->harga - $lb->diskon , false)}}</span>
+                                    </li>
+                                    @endforeach
                                     <li id="cFee" class="list-group-item text-muted" style="display:block;">
                                         <span id="fee-title">Biaya Layanan</span><br>
                                         <small id="fee-desc">Admin</small>
@@ -161,6 +180,9 @@ if ($pay->metpem == "tunai") {
                                 @if($pay->status === "pending")
                                 <h2 id="expired_at">Pembayaran pending</h2>
                                 <p class="mt-3 mb-1 info">Menunggu Konfirmasi Pembayaran</p>
+                                @if(auth()->user())
+                                <div class=" p-1  rounded confirm pointer bg-info text-white pointer" data-add="confirmlsg/{{$pay->id}}">Konfirmasi Pembayaran</div>
+                                @endif
                                 @elseif($pay->status == "berhasil")
                                 <h2 id="expired_at">Pembayaran Berhasil<i class='fa fa-check-circle text-success' aria-hidden='true'></i></h2>
                                 @endif
@@ -169,6 +191,7 @@ if ($pay->metpem == "tunai") {
                                 <?php if ($pay->status == "pending") { ?>
                                     <p class="mt-3 mb-1">Tegat Waktu Pembayaran</p>
                                     <h2 id="expired_at"></h2>
+
                                 <?php } elseif ($pay->status == "expired") { ?>
                                     <p class="mt-3 mb-1 info">Waktu Pembayaran Habis</p>
                                     <h2 id="expired_at">Transaksi gagal</h2>
@@ -196,7 +219,7 @@ if ($pay->metpem == "tunai") {
             </div>
         </div>
     </div>
-    <iframe id="myIframe" width="800" srcdoc="" height="600" style="display: block;" frameborder="0"></iframe>
+    <iframe id="myIframe" width="800" srcdoc="" height="600" style="display: none   ;" frameborder="0"></iframe>
     <script src="{{url('js/app.js')}}"></script>
 
     <script type="text/javascript">
@@ -205,6 +228,10 @@ if ($pay->metpem == "tunai") {
                 .css("max-width", "280px");
         });
         $(document).ready(function() {
+            $('.confirm').click(function() {
+                confirm("Konfirmasi Pembayaran", "", "Konfirmasi Gagal", $(this).data("add"),
+                    function(res) {})
+            })
 
 
             function updateCountdown(targetTime) {
@@ -227,6 +254,7 @@ if ($pay->metpem == "tunai") {
                 <?php if ($pay->metpem != "tunai") { ?>
                     const countdownString = `${days} hari, ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${remainingSecondsAfterMinutes.toString().padStart(2, '0')}`;
                     return countdownString;
+                    1
                 <?php } ?>
             }
 
@@ -245,7 +273,7 @@ if ($pay->metpem == "tunai") {
                 updateTimer(); // Initial update
                 const timing = setInterval(updateTimer, 1000);
                 // Update every second
-                const cek = setInterval(cektransaksi, 2000);
+                const cek = setInterval(cektransaksi, 4000);
 
 
             <?php }
@@ -268,16 +296,10 @@ if ($pay->metpem == "tunai") {
                             timer: 1000,
                             buttons: false,
                         }).then((result) => {
-                            const iframe = document.getElementById("myIframe"); // Dapatkan elemen iframe menggunakan DOM
-                            const kodeHTML = res.data;
-                            iframe.style = "display:block";
-
-                            iframe.srcdoc = kodeHTML; // Atur srcdoc dengan kode HTML yang diinginkan
-
-                            iframe.onload = function() {
-                                iframe.contentWindow.print();
-                            };
-                            iframe.style = "display:none";
+                            cnota(res.data)
+                            setTimeout(function() {
+                                window.location.href = "{{url('/')}}";
+                            }, 20000);
                         });
                     }
                 });
