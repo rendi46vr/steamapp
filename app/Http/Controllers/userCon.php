@@ -79,4 +79,10 @@ class userCon extends Controller
         $user->save();
         return "Password  " . $user->name . " direset";
     }
+
+
+    public function settingwa()
+    {
+        return view('setting.whatsapp');
+    }
 }

@@ -69,12 +69,12 @@ if ($pay->metpem == "tunai") {
                 <img src="{{url('/logo.png')}}" style="max-height: 65px;" alt="iPaymu Merchant">
                 <!-- <h3> SteamApp</h3> -->
                 <div class="d-block d-lg-none d-md-none mt-2 ml-1">
-                    <h6 class="">rendi</h6>
+                    <h6 class="">SmartWax</h6>
                 </div>
             </div>
             <div class="col-md-6 col-sm-12 col-8 d-none d-lg-block d-md-block">
                 <h4 class="pay-to">
-                    rendi
+                    SmartWax
                 </h4>
             </div>
             <div class="col-md-6">
@@ -92,7 +92,7 @@ if ($pay->metpem == "tunai") {
                             <div class="card-body" style="padding: 0;">
                                 <ul class="list-group list-group-flush">
                                     <li class="list-group-item">
-                                        <h6>{{$pay->layanan->layanan}}</h6>
+                                        <h6>{{$pay->dataorder->name}}</h6>
                                         @if($pay->dataorder->diskon > 0)
                                         <small> <sup>Rp. </sup> <s> {{ rupiah($pay->dataorder->harga, false)}} </s></small>
                                         @else
@@ -104,7 +104,7 @@ if ($pay->metpem == "tunai") {
                                     <li class="list-group-item">
                                         <h6>{{$lb->layanantambahan->layanan}}</h6>
                                         @if($lb->diskon > 0)
-                                        <small> <sup>Rp. </sup> {{ rupiah($lb->harga, false)}}</small>
+                                        <small> <sup>Rp. </sup> <s>{{ rupiah($lb->harga, false)}} </s></small>
                                         @else
                                         <small> <sup>Rp. </sup> {{ rupiah($lb->harga - $lb->diskon, false)}}</small>
                                         @endif
@@ -119,10 +119,6 @@ if ($pay->metpem == "tunai") {
                                         @else
                                         <span style="float: right;" id="fee-val"><sup>Rp. </sup>{{ rupiah($pay->payment->Fee, false)}}</span>
                                         @endif
-                                    </li>
-                                    <li id="cDiscount" class="list-group-item text-muted" style="display:block;">
-                                        <span id="discount-title" class="small">Discount</span>
-                                        <span style="float: right;" id="discount-val"></span>
                                     </li>
                                     <li id="cInsurance" class="list-group-item" style="display:none;">
                                         <span>Biaya Admin</span>

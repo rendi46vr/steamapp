@@ -126,8 +126,14 @@
                         <a class="dropdown-item" href="{{url('tgagal')}}">Transaski Gagal</a>
                     </div>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{url('/dashboard')}}">Setting</a>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle text-dark" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Setting
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" href="{{url('dashboard')}}">Pengguna</a>
+                        <a class="dropdown-item" href="{{url('seeting/wa')}}">Koneksi Whatsapp</a>
+                    </div>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="{{url('logout')}}">Logout <i class="fa fa-sign-out" aria-hidden="true"></i></a>

@@ -6,32 +6,52 @@ var my_form, name_class,action;
 var auto_focus = false;
 $(document).ready(function(){
     const qtyt = $('.qty .tambah'), qtyk = $('.qty .kurang'), qtyq = $('.qty .quantity'), harga = $('span.harga span');
-    qtyt.on('click',function(){
-        if(+qtyq.text() < 10    ){
+        qtyt.on('click',function(){
+        let array = [];
+        $("input[name='addon']:checked").each(function() {
+            array.push($(this).val());
+        });
+        if(+qtyq.text() < 8    ){
             let qty = +qtyq.text();
             $.isNumeric(qty) ? '':qty=1;
             qtyq.text(qty+1),
-            $('.msgqty').val(qty+1)
+            $('.msgquantity').val(qty+1)
             
             let data = qty+1
-            edit('cqty/'+data,'span.harga span');
+           doReq('cqty',{_token:tkn(),qty:data,tambahan:array},function(res){
+            $(".table-order").html(res.data);
+
+           })
         }
+        c(array)
+
     })
     qtyk.on('click',function(){
+        let array = [];
+
+        $("input[name='addon']:checked").each(function() {
+            array.push($(this).val());
+        });
         let qty = +qtyq.text(), tt;
         $.isNumeric(qty) ? '':qty=1;
         if(qty >1){
             tt = qty-1 
             qtyq.text(tt)
-        $('.msgqty').val(tt)
+        $('.msgquantity').val(tt)
+        let data = tt
+        doReq('cqty',{_token:tkn(),qty:data,tambahan:array},function(res){
+            $(".table-order").html(res.data);
 
-            edit('cqty/'+tt,'span.harga span');
+           })
         }
+        c(array)
+
 
 
 
         
     })
+   
 
 $(document).on('click', '.showform', function() {
     const ini = $(this)
@@ -48,6 +68,7 @@ $(document).on('click', '.deldata', function() {
 //create and update
 $(document).on('click', "button[type=submit]", function(e) {
     e.preventDefault()
+    c('sdada')
     const form = $(this).closest('form')
     action =  form.attr('id');
     c(form)
@@ -108,6 +129,7 @@ function    edit(u,c) {
 function deldata(u) {
     doReq(u, null, refreshData);
 }
+
 function validate(a,r, b=true) {
     var data = my_form.serializeArray();
     var mydata = {}
@@ -296,3 +318,4 @@ function cetakIframe() {
     iframe.contentWindow.print(); // Mencetak
     iframe.css("display", "none")
 }
+

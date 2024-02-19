@@ -18,7 +18,11 @@ function rupiah($angka)
             <td>1</td>
             <td>{{$layanan->layanan}}</td>
             <td>@if($layanan->type == 0 ) Layanan Utama @endif</td>
+            @if(session()->has("cqty"))
+            <td>{{rupiah($layanan->harga * session("cqty") -  $layanan->diskon * session("cqty"))}}</td>
+            @else
             <td>{{rupiah($layanan->harga -  $layanan->diskon)}}</td>
+            @endif
         </tr>
         @foreach($tambahan as $l)
         <tr>
@@ -33,7 +37,11 @@ function rupiah($angka)
         <tr>
             <th></th>
             <th colspan="2">Sub Total</th>
+            @if(session()->has("cqty"))
+            <th colspan="2">{{rupiah(($tambahan->sum("harga") - $tambahan->sum("diskon")) + ($layanan->harga * session("cqty") - $layanan->diskon  * session("cqty")))}}</th>
+            @else
             <th colspan="2">{{rupiah($tambahan->sum("harga") - $tambahan->sum("diskon") + $layanan->harga - $layanan->diskon)}}</th>
+            @endif
         </tr>
     </tfoot>
 </table>

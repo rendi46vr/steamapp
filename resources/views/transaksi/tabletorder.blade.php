@@ -8,7 +8,7 @@ use App\Tools\tools;
         <tr>
             <th>No</th>
             <th>Plat</th>
-            <th>Pelanggan</th>
+            <th>nomor</th>
             <th>Email</th>
             <th>Pembayaran</th>
             <th>Watktu Order</th>
@@ -18,7 +18,7 @@ use App\Tools\tools;
 
             <!-- <th>Biaya Admin</th> -->
             <th>Action</th>
-            <th>Buat</th>
+            <!-- <th>Buat</th> -->
         </tr>
     </thead>
     <tbody>
@@ -27,11 +27,7 @@ use App\Tools\tools;
             <td>{{$loop->iteration}}</td>
             <td>{{$t->plat}}</td>
             <td>
-                @if($t->user_id != null)
-                <div class=" p-1 rounded bg-info text-white max-content  "> Member</div>
-                @else
-                <div class=" p-1 rounded bg-secondary text-white max-content ">Non Member</div>
-                @endif
+                {{$t->wa}}
             </td>
             <td>{{$t->email}}</td>
             <td>{{$t->payget->channel_description}}</td>
@@ -66,11 +62,11 @@ use App\Tools\tools;
                 <div class=" p-1 rounded bg-danger text-white max-content ">Expired</div>
                 @endif
             </td>
-            <td>
+            <!-- <td>
                 @if($t->user_id == null)
                 <div class=" p-1 rounded bg-secondary text-white max-content pointer createmember" data-add="addmember/{{$t->id}}" data-show=".dataTransaksi"><i class="fa fa-address-card" aria-hidden="true"></i> Buat Member</div>
                 @endif
-            </td>
+            </td> -->
 
         </tr>
         @endforeach

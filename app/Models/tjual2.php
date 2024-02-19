@@ -11,6 +11,7 @@ class tjual2 extends Model
 {
     use HasFactory;
     public $incrementing = false;
+    protected $keyType = 'string';
     protected $fillable = ["id", "tjual_id", "layanantambahan_id", "harga", "diskon"];
 
 

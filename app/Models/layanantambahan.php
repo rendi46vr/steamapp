@@ -13,6 +13,6 @@ class layanantambahan extends Model
     public $incrementing = false;
     public function tjual2()
     {
-        return  $this->hasMany(tjual2::class, 'layanantambahan_id', 'id');
+        return  $this->hasOne(tjual2::class);
     }
 }

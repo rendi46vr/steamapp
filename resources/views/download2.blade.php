@@ -123,10 +123,10 @@
         <div class="footer">
             <div class="footer">
                 <div class="footer-left">
-                    <p><strong>Phone:</strong> <br>{{$tjual->wa}}</p>
+                    <p><strong>Phone:</strong> <br>+62 821-8888-9696</p>
                 </div>
                 <div class="footer-right">
-                    <p><strong>Email :</strong> <br>{{$tjual->email}}</p>
+                    <p><strong>Email :</strong> <br>smartwaxx@gmail.com</p>
                 </div>
             </div>
         </div>

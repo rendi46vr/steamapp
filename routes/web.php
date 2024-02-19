@@ -65,6 +65,7 @@ Route::post('find/{id}', [pembelianCon::class, 'find']);
 Route::group(['middleware' => ['auth']], function () {
     Route::group(['middleware' => ['cek_login']], function () {
         Route::get('dashboard', [userCon::class, "index"]);
+        Route::get('seeting/wa', [userCon::class, "settingwa"]);
 
         //adduser
         Route::post('adduser', [userCon::class, "adduser"]);
@@ -111,6 +112,7 @@ Route::group(['middleware' => ['auth']], function () {
     });
 });
 Route::get('tiket/{id}', [pembelianCon::class, "tiket"]);
+Route::post('cqty', [pembelianCon::class, "cqty"]);
 Route::get('scan', [memberController::class, "scan"]);
 Route::post('memberorder/{id}', [memberController::class, "memberorder"]);
 Route::post('belilagi/{id}', [memberController::class, "belilagi"]);
@@ -123,4 +125,4 @@ Route::get('print', function () {
 Route::get('nota/{slug}', [pembelianCon::class, "cetaknota"]);
 Route::get('teskirim/{slug}', [pembelianCon::class, "tiketpdf"]);
 
-Route::get('test', [ipaymuController::class, "test"]);
+Route::get('test', [pembelianCon::class, "test"]);

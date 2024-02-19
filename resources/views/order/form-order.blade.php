@@ -13,6 +13,7 @@ Form Order
 @section('content')
 <?php
 
+use Illuminate\Http\Request;
 use App\Tools\tools;
 ?>
 <form id="order" novalidate>
@@ -56,9 +57,25 @@ use App\Tools\tools;
                         </div>
                         <div class="form-group vr-form">
                             <label for="">Email</label>
-                            <input type="email" name="email" id="" class="form-control msgemail" placeholder="example@email.com" id="#layanan_tambahan"" aria-describedby=" helpId">
+                            <input type="email" name="email" id="" class="form-control msgemail " placeholder="example@email.com" id="#layanan_tambahan"" aria-describedby=" helpId">
                         </div>
                     <?php } ?>
+                    @if($jasa->formqty > 0)
+
+                    <div class="form-group vr-form">
+                        <label for="">Quantity</label>
+                        <div class="qty">
+                            <span class="pointer kurang">
+                                <i class="fa fa-minus-circle " aria-hidden="true"></i>
+                            </span>
+                            <span class="quantity mr-2 ml-2">1</span>
+                            <span class="pointer tambah">
+                                <i class="fa fa-plus-circle i-orange" aria-hidden="true"></i>
+                            </span>
+                        </div>
+                        <input type="hidden" name="quantity" max="6" min="1" id="" value="1" class=" msgquantity " placeholder="" value="1" id="quantity"" aria-describedby=" helpId">
+                    </div>
+                    @endif
                 </div>
                 <div class="smw-card-header">
                     <i class="fa fa-list-alt i-orange" aria-hidden="true"></i>
