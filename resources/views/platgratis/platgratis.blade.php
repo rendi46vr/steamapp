@@ -24,7 +24,10 @@ Plat Gratis
                     @endif
             </div>
             <div class="smw-card-body  table-responsive">
+            @if(auth()->user()->role =="Admin")
                 <button class="btn btn-orange" data-toggle="modal" data-target="#exampleModal"><i class="fa fa-plus" aria-hidden="true"></i> Tambah</button>
+            @endif
+
                 <div class="dataPlat mt-2">
                     {!! $platgratis !!}
                 </div>

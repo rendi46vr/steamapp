@@ -146,6 +146,11 @@ function validate(a,r, b=true) {
             data.splice(i, 1);
         }
     }
+    $.ajaxSetup({
+        headers: {
+            "X-CSRF-TOKEN": tkn(),
+        },
+    });
     $.ajax({
         url: baseUri('validation'),
         type: 'post',

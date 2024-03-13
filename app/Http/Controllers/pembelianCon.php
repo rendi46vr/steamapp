@@ -19,7 +19,6 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Mail;
 use App\Models\layanantambahan;
 use App\Models\tjual2;
-use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use App\Http\Controllers\PlatGratisController;
@@ -466,35 +465,18 @@ class pembelianCon extends Controller
             $encodedText = urlencode($text);
             $encodedText1 = urlencode($text1);
             // kirim ke wa 
-            $client = new Client();
-
             // Membuka file dan membacanya sebagai string
             // Mengirim file nota.pdf
-            // Http::attach(
-            //     'file',
-            //     $notapdf,
-            //     'nota.pdf'
-            // )->post(env('WA_URL') . "kirimfile", [
-            //     "idclient" => intval(env('WA_IDCLIENT')),
-            //     "number" => $tjual->wa,
-            //     "pesan" => $text,
+            Http::attach(
+                'file',
+                $notapdf,
+                'nota.pdf'
+            )->post(env('WA_URL') . "kirimfile", [
+                "idclient" => intval(env('WA_IDCLIENT')),
+                "number" => $tjual->wa,
+                "pesan" => $text,
 
-            // ]);
-            $response = $client->post(env('WA_URL') . "kirimfile", [
-                'multipart' => [
-                    [
-                        'name' => 'file',
-                        'contents' => $notapdf,
-                        'filename' => 'nota.pdf',
-                    ],
-                ],
-                'form_params' => [
-                    'idclient' => intval(env('WA_IDCLIENT')),
-                    'number' => $tjual->wa,
-                    'pesan' => $text,
-                ],
             ]);
-            dd($response);
             // Http::attach(
             //     'file',
             //     $qrpdf,
