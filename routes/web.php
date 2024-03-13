@@ -13,6 +13,7 @@ use App\Http\Controllers\layananController;
 use App\Http\Controllers\memberController;
 use App\Http\Controllers\layanantambahanController;
 use App\Http\Controllers\userCon;
+use App\Http\Controllers\PlatGratisController;
 
 /*
 |--------------------------------------------------------------------------
@@ -109,6 +110,16 @@ Route::group(['middleware' => ['auth']], function () {
         Route::post('lbstatus/{id}', [layanantambahanController::class, "lbstatus"]);
         //member
         Route::post('addmember/{id}', [memberController::class, "create"]);
+
+
+        //platgratis
+        Route::get('platgratis', [PlatGratisController::class, "platgratis"]);
+        Route::post('pageplatgratis/{page}', [PlatGratisController::class, "pageplatgratis"]);
+        Route::post('searchplatgratis/{serach}', [PlatGratisController::class, "searchplatgratis"]);
+        Route::post('addplatgratis', [PlatGratisController::class, "addplatgratis"]);
+        Route::post('delplatgratis/{id}', [PlatGratisController::class, "delplatgratis"]);
+        Route::post('editplatgratis', [PlatGratisController::class, "editplatgratis"]);
+        Route::post('lstatus/{id}', [PlatGratisController::class, "lstatus"]);
     });
 });
 Route::get('tiket/{id}', [pembelianCon::class, "tiket"]);

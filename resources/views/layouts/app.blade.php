@@ -113,6 +113,7 @@
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                         <a class="dropdown-item" href="{{url('layanan')}}">Layanan Utama</a>
                         <a class="dropdown-item" href="{{url('layanantambahan')}}">Layanan Tambahan</a>
+                        <a class="dropdown-item" href="{{url('platgratis')}}">Daftar PLAT Gratis</a>
                     </div>
 
                 </li>

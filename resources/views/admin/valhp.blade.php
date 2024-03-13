@@ -26,7 +26,6 @@ function rupiah($angka)
         </div>
     </div>
 </div>
-</div>
 <div class="jtiket">
 
     <div class="row lg-100">
@@ -34,7 +33,7 @@ function rupiah($angka)
         <div class="col-lg-6 col-md-6 col-12">
             <div class="mx-1 single-tiket">
                 <div class="row">
-                    <div class="col-9">
+                    <div class="col-9 mhs">
                         <span class="title">{{$t->layanan}}</span>
                         <div class="deskripsi">
                             <label>Deskripsi</label>
@@ -50,7 +49,7 @@ function rupiah($angka)
                             <s class="text-danger fm">{{rupiah($t->harga)}}</s class="text-danger"><br>
                             @endif
                             <span class="harga">{{rupiah($t->harga - $t->diskon)}}</span>
-                            <label class="mt-1" style="color: #5860fcde;">{{$t->qtyoption}}x cuci</label>
+                            <label class="mt-1" style="color: #5860fcde;">{{$t->qtyoption}}x Cuci</label>
                         </div>
                     </div>
                 </div>

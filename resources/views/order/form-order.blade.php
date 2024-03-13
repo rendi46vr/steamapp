@@ -162,8 +162,9 @@ use App\Tools\tools;
         doReq("tambahlayanan", {
             _token: "{{ csrf_token() }}",
             tambahan: checked,
+            plat: $('.msgplat').val(),
         }, (res) => {
-            c(res)
+            c($('.msgplat').val())   
             if (res.status) {
                 $(".table-order").html(res.data);
             }

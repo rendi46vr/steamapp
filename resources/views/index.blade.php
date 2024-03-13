@@ -170,7 +170,4 @@ function rupiah($angka)
 </script>
 @endsection
 
-
-
-
 @endsection

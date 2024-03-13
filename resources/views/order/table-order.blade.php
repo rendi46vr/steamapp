@@ -19,9 +19,9 @@ function rupiah($angka)
             <td>{{$layanan->layanan}}</td>
             <td>@if($layanan->type == 0 ) Layanan Utama @endif</td>
             @if(session()->has("cqty"))
-            <td>{{rupiah($layanan->harga * session("cqty") -  $layanan->diskon * session("cqty"))}}</td>
+            <td>{{rupiah($gratis ? 0 :($layanan->harga * session("cqty") -  $layanan->diskon * session("cqty")))}}</td>
             @else
-            <td>{{rupiah($layanan->harga -  $layanan->diskon)}}</td>
+            <td>{{rupiah($gratis ? 0 :($layanan->harga -  $layanan->diskon))}}</td>
             @endif
         </tr>
         @foreach($tambahan as $l)
@@ -29,7 +29,7 @@ function rupiah($angka)
             <td>{{$loop->iteration+1}}</td>
             <td>{{$l->layanan}}</td>
             <td>Layanan Tambahan</td>
-            <td>{{rupiah($l->harga - $l->diskon )}}</td>
+            <td>{{rupiah($gratis ? 0 : ($l->harga - $l->diskon ))}}</td>
         </tr>
         @endforeach
     </tbody>
@@ -38,9 +38,9 @@ function rupiah($angka)
             <th></th>
             <th colspan="2">Sub Total</th>
             @if(session()->has("cqty"))
-            <th colspan="2">{{rupiah(($tambahan->sum("harga") - $tambahan->sum("diskon")) + ($layanan->harga * session("cqty") - $layanan->diskon  * session("cqty")))}}</th>
+            <th colspan="2">{{rupiah($gratis ? 0 :($tambahan->sum("harga") - $tambahan->sum("diskon")) + ($layanan->harga * session("cqty") - $layanan->diskon  * session("cqty")))}}</th>
             @else
-            <th colspan="2">{{rupiah($tambahan->sum("harga") - $tambahan->sum("diskon") + $layanan->harga - $layanan->diskon)}}</th>
+            <th colspan="2">{{rupiah($gratis ? 0 :($tambahan->sum("harga") - $tambahan->sum("diskon") + $layanan->harga - $layanan->diskon))}}</th>
             @endif
         </tr>
     </tfoot>

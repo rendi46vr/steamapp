@@ -22,9 +22,11 @@ use App\Models\tjual2;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use App\Http\Controllers\PlatGratisController;
+use App\Models\PlatGratis;
 
 class pembelianCon extends Controller
-{
+{   
     public function index(DiskonController $ds)
     {
         $today =  Carbon::today()->toDateString();
@@ -59,12 +61,12 @@ class pembelianCon extends Controller
         }
     }
 
-    public function tableorder($slug, $layanan_tambahan = [])
+    public function tableorder($slug, $layanan_tambahan = [], $gratis = false)
     {
         $layanan = layanan::where("slug", $slug)->first();
         array_push($layanan_tambahan, $layanan->id);
         $tambahan = layanantambahan::wherein("id", $layanan_tambahan)->get();
-        return view('order.table-order', compact("tambahan", "layanan"))->render();
+        return view('order.table-order', compact("tambahan", "layanan", 'gratis'))->render();
     }
     public function cqty(Request $request)
     {
@@ -78,6 +80,7 @@ class pembelianCon extends Controller
 
     public function order(Request $request, ipaymuController $ip)
     {
+
         $validasiData = $request->validate([
             'tgl' => '',
             'wa' => 'required|numeric',
@@ -86,6 +89,13 @@ class pembelianCon extends Controller
             "metpem" => "required",
             "qunatity" => "max:2",
         ]);
+        $getplat = new PlatGratisController();
+        $platgratis = $getplat->dataPlatgratis();
+        $gratis = false;
+        if(in_array(strtoupper($validasiData['plat']), $platgratis)){
+            $gratis = true;
+        }
+
         $lastRecord = tjual::latest()->first();
         $main = layanan::where("slug", Session("order"))->first();
         if (strtoupper($validasiData["plat"]) == $lastRecord->plat) {
@@ -139,8 +149,6 @@ class pembelianCon extends Controller
             if (!is_array($addlt)) {
                 $addlt = [$addlt];
             }
-
-
             $getProduct = layanantambahan::wherein("id", $addlt)->get();
             // return $getProduct->sum("harga") + $main->harga;
             $product = $getProduct->pluck("layanan")->toArray();
@@ -153,12 +161,27 @@ class pembelianCon extends Controller
             }
             $harga =   $getProduct->pluck("harga")->toArray();
             array_push($harga, $main->harga * $opsiqty);
-            $amount = ($getProduct->sum("harga") - $getProduct->sum("diskon")) + ($main->harga * $opsiqty - $main->diskon * $opsiqty);
+            if ($gratis) {
+                $jumlah_harga = count($harga);
+                for ($i = 0; $i < $jumlah_harga; $i++) {
+                    $harga[$i] = 0;
+                }
+            }
+            if($gratis){
+
+                $amount = 0;
+            }else{
+                $amount = ($getProduct->sum("harga") - $getProduct->sum("diskon")) + ($main->harga * $opsiqty - $main->diskon * $opsiqty);
+            }
         } else {
             $product = [$main->layanan];
             $qty =   [$main->qtyoption];
             $harga =   [($main->harga * $opsiqty - $main->diskon * $opsiqty)];
-            $amount = ($main->harga * $opsiqty - $main->diskon * $opsiqty);
+            if($gratis){
+                $amount =0;
+            }else{
+                $amount = ($main->harga * $opsiqty - $main->diskon * $opsiqty);
+            }
         }
         $isaktif = 0;
         if ($qty > 1) {
@@ -197,12 +220,19 @@ class pembelianCon extends Controller
                 if (Auth::user()) {
                     $i == 1 ? $sts = 1 :  $sts = 0;
                 }
+                if($gratis){
+                    $ttharga=0;
+                    $ttdiskon =0;
+                }else{
+                    $ttharga = $main->harga * $opsiqty;
+                    $ttdiskon = $main->diskon * $opsiqty;
+                }
                 tjual1::create([
                     "id" => Str::uuid(),
                     "tjual_id" => $order->id,
                     "layanan_id" => $main->id,
-                    "harga" => $main->harga * $opsiqty,
-                    "diskon" => $main->diskon * $opsiqty,
+                    "harga" => $ttharga,
+                    "diskon" => $ttdiskon,
                     "opsiqty" => $opsiqty,
                     "name" => $main->layanan . $opsistring,
                     "status" => $sts
@@ -214,8 +244,8 @@ class pembelianCon extends Controller
                         "id" => Str::uuid(),
                         "tjual_id"  => $order->id,
                         "layanantambahan_id" => $gp->id,
-                        "harga" => $gp->harga,
-                        "diskon" => $gp->diskon
+                        "harga" => $gratis ? 0 : $gp->harga,
+                        "diskon" => $gratis ? 0 : $gp->diskon
                     ]);
                 }
             }
@@ -267,12 +297,19 @@ class pembelianCon extends Controller
                 if (Auth::user()) {
                     $i == 1 ? $sts = 1 :  $sts = 0;
                 }
+                if($gratis){
+                    $ttharga=0;
+                    $ttdiskon =0;
+                }else{
+                    $ttharga = $main->harga * $opsiqty;
+                    $ttdiskon = $main->diskon * $opsiqty;
+                }
                 tjual1::create([
                     "id" => Str::uuid(),
                     "tjual_id" => $order->id,
                     "layanan_id" => $main->id,
-                    "harga" => $main->harga * $opsiqty,
-                    "diskon" => $main->diskon * $opsiqty,
+                    "harga" => $ttharga,
+                    "diskon" => $ttdiskon,
                     "opsiqty" => $opsiqty,
                     "name" => $main->layanan . $opsistring,
                     "status" => $sts
@@ -285,9 +322,8 @@ class pembelianCon extends Controller
                         "id" => Str::uuid(),
                         "tjual_id"  => $order->id,
                         "layanantambahan_id" => $gp->id,
-                        "harga" => $gp->harga,
+                        "harga" => $gratis ? 0 : $gp->harga,
                         "diskon" => $gp->diskon
-
                     ]);
                 }
             }
@@ -324,7 +360,8 @@ class pembelianCon extends Controller
     public function tambahlayanan(Request $request)
     {
         $validasiData = $request->validate([
-            "tambahan" => ""
+            "tambahan" => "",
+            "plat" => ''
         ]);
         if ($request->ajax()) {
             // dd($request);
@@ -333,7 +370,15 @@ class pembelianCon extends Controller
             } else {
                 $array = [];
             }
-            $data =  $this->tableorder(session("order"), $array);
+            $gratis = false;
+            $getplat = new PlatGratisController();
+            $platgratis = $getplat->dataPlatgratis();
+            
+            if(in_array(strtoupper($validasiData['plat']), $platgratis)){
+                $gratis = true;
+            }
+
+            $data =  $this->tableorder(session("order"), $array, $gratis);
 
             return response()->json([
                 "status" => true,
