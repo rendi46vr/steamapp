@@ -9,6 +9,7 @@ use App\Models\tgltiket;
 use Illuminate\Http\Request;
 use App\Http\Controllers\DiskonController;
 use App\Http\Controllers\ipaymuController;
+use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\layananController;
 use App\Http\Controllers\memberController;
 use App\Http\Controllers\layanantambahanController;
@@ -120,6 +121,14 @@ Route::group(['middleware' => ['auth']], function () {
         Route::post('delplatgratis/{id}', [PlatGratisController::class, "delplatgratis"]);
         Route::post('editplatgratis', [PlatGratisController::class, "editplatgratis"]);
         Route::post('lstatus/{id}', [PlatGratisController::class, "lstatus"]);
+
+        //laporan
+        Route::get('laporan', [LaporanController::class,'index']);
+        Route::get('laporan/plat', [LaporanController::class,'laporanKendaraan']);
+        Route::post('searchperplat/{search?}', [LaporanController::class,'searchperplat']);
+        Route::post('pageperplat/{page}', [LaporanController::class,'pageperplat']);
+        Route::get('laporan/plat/{bg}', [LaporanController::class,'filterLaporanKendaraan']);
+        Route::post('laporan/{search?}', [LaporanController::class,'filterindex']);
     });
 });
 Route::get('tiket/{id}', [pembelianCon::class, "tiket"]);
