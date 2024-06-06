@@ -21,6 +21,6 @@ class tjual2 extends Model
     }
     public function layanantambahan()
     {
-        return  $this->belongsTo(layanantambahan::class, 'layanantambahan_id', 'id');
+        return  $this->hasOne(layanantambahan::class, 'id', 'layanantambahan_id');
     }
 }

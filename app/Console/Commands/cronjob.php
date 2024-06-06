@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Models\tjual;
+use Carbon\Carbon;
 use DateTime;
 use Illuminate\Support\Facades\Log;
 
@@ -55,6 +56,26 @@ class cronjob extends Command
             Log::info("Cron job melakukan update pada orderan dengan id =  $p->id  !");
         }
         Log::info("=============== Cronjob finish =================");
-        print_r("yayayyaayay");
+
+        //
+        $order2 = tjual::where(['type_layanan'=> 1, 'is_aktif'=>1])->get();
+        foreach ($order2 as $od) {
+            //cek apakah $od kolom jarak hari end_date dari sekarang, kemudian update sisa_durasi, jika end_date sudah lewat maka update is_aktif jadi 0 dan sisa_durasi jadi 0
+            // Ambil tanggal akhir (end_date) dari record
+            $endDate = Carbon::parse($od->end_at);
+            $now = Carbon::now();
+
+            // Hitung jarak hari dari sekarang ke end_date
+            $daysDifference = $now->diffInDays($endDate, false);
+
+            if ($daysDifference >= 0) {
+                // Jika end_date belum lewat, update sisa_durasi
+                $od->sisa_durasi = $daysDifference;
+            } else {
+                // Jika end_date sudah lewat, update is_aktif jadi 0 dan sisa_durasi jadi 0
+                $od->isaktif = 0;
+                $od->sisa_durasi = 0;
+            }
+        }
     }
 }

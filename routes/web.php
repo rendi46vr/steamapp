@@ -9,8 +9,10 @@ use App\Models\tgltiket;
 use Illuminate\Http\Request;
 use App\Http\Controllers\DiskonController;
 use App\Http\Controllers\ipaymuController;
+use App\Http\Controllers\langgananController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\layananController;
+use App\Http\Controllers\layananPaketController;
 use App\Http\Controllers\memberController;
 use App\Http\Controllers\layanantambahanController;
 use App\Http\Controllers\userCon;
@@ -59,6 +61,7 @@ Route::get('/', [pembelianCon::class, 'index']);
 Route::get('form-order/{slug}', [pembelianCon::class, 'formorder']);
 Route::post('order', [pembelianCon::class, 'order']);
 Route::post("tambahlayanan", [pembelianCon::class, "tambahlayanan"]);
+Route::post("addpaket/{id}", [pembelianCon::class, "addpaket"]);
 Route::GET('payment/{slug}', [ipaymuController::class, 'payment']);
 Route::post('cekTransaksi/{slug}', [ipaymuController::class, 'cek']);
 Route::get('cetaknota/{slug}', [pembelianCon::class, 'cetaknota']);
@@ -83,6 +86,10 @@ Route::group(['middleware' => ['auth']], function () {
         Route::post('confirmlsg/{id}', [UserController::class, "confirmlsg"]);
         Route::post('admincek/{slug}', [UserController::class, "admincekproses"]);
 
+        //data langganan
+        Route::post('langganan/{slug}', [langgananController::class, 'pakaiLangganan']);
+        Route::get('langganan-detail/{slug}', [langgananController::class, 'langgananDetail']);
+
         //Tampil Oder
         Route::get('torder', [UserController::class, "torder"]);
         Route::post('pagetorder/{page}', [UserController::class, "pagetorder"]);
@@ -100,6 +107,17 @@ Route::group(['middleware' => ['auth']], function () {
         Route::post('dellayanan/{id}', [layananController::class, "dellayanan"]);
         Route::post('editlayanan', [layananController::class, "editlayanan"]);
         Route::post('lstatus/{id}', [layananController::class, "lstatus"]);
+
+        //layana paket
+        Route::group(['prefix' => 'layanan/paket'], function () {
+            Route::get('/{id}', [layananPaketController::class, 'index'])->name('index');
+            Route::post('addpaket', [layananPaketController::class, "addpaket"]);
+            Route::post('delpaket/{id}', [layananPaketController::class, "delpaket"]);
+            Route::post('editpaket', [layananPaketController::class, "editpaket"]);
+            Route::post('lstatus/{id}', [layananPaketController::class, "lstatus"]);
+        }); 
+
+
         //layanan tambahan
         Route::get('layanantambahan', [layanantambahanController::class, "layanantambahan"]);
         Route::post('pagelayanantambahan/{page}', [layanantambahanController::class, "pagelayanantambahan"]);
@@ -120,7 +138,7 @@ Route::group(['middleware' => ['auth']], function () {
         Route::post('addplatgratis', [PlatGratisController::class, "addplatgratis"]);
         Route::post('delplatgratis/{id}', [PlatGratisController::class, "delplatgratis"]);
         Route::post('editplatgratis', [PlatGratisController::class, "editplatgratis"]);
-        Route::post('lstatus/{id}', [PlatGratisController::class, "lstatus"]);
+        // Route::post('lstatus/{id}', [PlatGratisController::class, "lstatus"]);
 
         //laporan
         Route::get('laporan', [LaporanController::class,'index']);
@@ -129,9 +147,11 @@ Route::group(['middleware' => ['auth']], function () {
         Route::post('pageperplat/{page}', [LaporanController::class,'pageperplat']);
         Route::get('laporan/plat/{bg}', [LaporanController::class,'filterLaporanKendaraan']);
         Route::post('laporan/{search?}', [LaporanController::class,'filterindex']);
+
     });
 });
 Route::get('tiket/{id}', [pembelianCon::class, "tiket"]);
+Route::get('langganan/{slug}', [langgananController::class, 'langganan']);
 Route::post('cqty', [pembelianCon::class, "cqty"]);
 Route::get('scan', [memberController::class, "scan"]);
 Route::post('memberorder/{id}', [memberController::class, "memberorder"]);
@@ -143,6 +163,6 @@ Route::get('print', function () {
     return view("invoice");
 });
 Route::get('nota/{slug}', [pembelianCon::class, "cetaknota"]);
-Route::get('teskirim/{slug}', [pembelianCon::class, "tiketpdf"]);
+Route::get('teskirim/{slug}', [pembelianCon::class, "kirirmnota"]);
 
-Route::get('test', [pembelianCon::class, "test"]);
+Route::get('test', [pembelianCon::class, "kirirmnota"]);

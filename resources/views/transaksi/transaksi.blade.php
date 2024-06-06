@@ -12,7 +12,7 @@ Data Transaksi
     <div class=" row">
         <div class="col-lg-12 col-md-12">
             <div class="smw-card-header"> <i class="fa fa-wpforms mr-1 i-orange" aria-hidden="true"></i>
-                Data Transaksi
+               Data Transaksi
             </div>
             <div class="d-flex col-12 justify-content-end mt-2 mr-2">
                 <div class="form-group mr-1">
@@ -80,7 +80,7 @@ Data Transaksi
         }
         return data;
     }
-
+    
     $(document).on('click', '.createmember', function() {
         doReq($(this).data("add"), null, (res) => {
             if (res.status) {
@@ -109,6 +109,8 @@ Data Transaksi
             }
         })
     })
+
+ 
 </script>
 
 

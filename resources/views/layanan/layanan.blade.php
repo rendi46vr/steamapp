@@ -76,6 +76,25 @@ Layanan Utama
         $("#ind").val(ini.data("ind"))
 
     })
+    $(document).ready(function() {
+        $('#service-type').change(function() {
+            c('adsfsaf');
+            var selectedValue = $(this).val();
+            var quantityInput = $('#quantity-input');
+            var harga = $('#harga-input');
+
+            if (selectedValue === '0') {
+                quantityInput.show();
+                harga.show();
+            } else if (selectedValue === '1') {
+                harga.hide();
+                quantityInput.hide();
+            } else {
+                quantityInput.hide();
+                harga.hide();
+            }
+        });
+    });
 </script>
 <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <form id="addlayanan">
@@ -98,7 +117,37 @@ Layanan Utama
                         <label for="message-text" style="font-size: 16px; " class=" col-form-label">Deskripsi</label>
                         <textarea type="text" class="form-control msgdeskripsi" name="deskripsi" id="deskripsi"> </textarea>
                     </div>
+
                     <div class="form-group vr-form">
+                        <label for="message-text" style="font-size: 16px; " class=" col-form-label">Type Layanan</label>
+                        <select name="type" id="service-type" class="form-control">
+                            <option value="" selected disabled hidden>Pilih Type Quota</option>
+                            <option value="0"> Quantity</option>
+                            <option value="1"> Durasi Waktu</option>
+                        </select>
+                    </div>
+
+                    <div id="quantity-input" class="form-group vr-form" style=" display: none;">
+                        <label  for="message-text" style="font-size: 16px;" class=" col-form-label">Quantity</label>
+                        <input type="number" class="form-control msgqtyoption" name="qtyoption" min="1" value="1" max="99" id="qtyoption">
+                    </div>
+                    <div id="duration-input" class="form-group vr-form" style="display: none;">
+                        <label for="duration" style="font-size: 16px;" class="col-form-label">Durasi</label>
+                        <select id="duration" name="durasi" class="form-control">
+                            <option value="" selected disabled hidden>Pilih Durasi</option>
+                            <!-- <option value="<?php echo date('Y-m-d', strtotime('+6 day')); ?>">1 Minggu</option>
+                            <option value="<?php echo date('Y-m-d', strtotime('+13 day')); ?>">2 Minggu</option>
+                            <option value="<?php echo date('Y-m-d', strtotime('+20 day')); ?>">3 Minggu</option>
+                            <option value="<?php echo date('Y-m-d', strtotime('+29 day')); ?>">1 Bulan</option> -->
+                             <option value="7">1 Minggu</option>
+                            <option value="14">2 Minggu</option>
+                            <option value="21">3 Minggu</option>
+                            <option value="30">1 Bulan</option>
+                        </select>
+                    </div>
+
+
+                    <div id="harga-input" class="form-group vr-form">
                         <label for="message-text" style="font-size: 16px; " class=" col-form-label">Harga</label>
                         <input type="number" class="form-control msgharga" name="harga" id="harga">
                     </div>
@@ -106,14 +155,10 @@ Layanan Utama
                         <label for="message-text" style="font-size: 16px; " class=" col-form-label">Diskon</label>
                         <input type="number" class="form-control msgdiskon" value="0" name="diskon" id="diskon">
                     </div>
-                    <div class="form-group vr-form">
-                        <label for="message-text" style="font-size: 16px; " class=" col-form-label">Qty</label>
-                        <input type="number" class="form-control msgqtyoption" name="qtyoption" min="1" value="1" max="99" id="qtyoption">
-                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">batal</button>
-                    <button type="submit" class="btn btn-primary resetFalse" form="addlayanan">save</button>
+                    <button type="submit" class="btn btn-primary resetFalse" form="addlayanan">Tambah</button>
                 </div>
             </div>
         </div>
@@ -160,11 +205,13 @@ Layanan Utama
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">batal</button>
-                    <button type="submit" class="btn btn-primary resetFalse" form="editlayanan">save</button>
+                    <button type="submit" class="btn btn-primary resetFalse" form="editlayanan">Simpan</button>
                 </div>
             </div>
         </div>
     </form>
 </div>
+
+
 
 @endsection

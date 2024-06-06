@@ -23,6 +23,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use App\Http\Controllers\PlatGratisController;
 use App\Models\PlatGratis;
+use App\Models\TjualPaket;
+use Illuminate\Support\Facades\DB;
 
 class pembelianCon extends Controller
 {   
@@ -39,18 +41,19 @@ class pembelianCon extends Controller
             }
             return redirect('pembayaran/' . session::get('bayar'));
         }
-        $layanan = layanan::where("type", 0)->where('isaktif', 1)->get();
+        $layanan = layanan::where('isaktif', 1)->get();
         return view('index', compact('layanan'));
     }
     public function formorder($slug)
     {
         Session::forget('cqty');
+        Session::forget('paket_id');
         $payment = payget::where("status", 1)->get();
 
         try {
             $layanan = $this->tableorder($slug);
             Session(["order" => $slug]);
-            $tambahan = layanan::where("type", ">", 0)->get();
+            $tambahan = layanan::get();
             $jasa = layanan::where("slug", $slug)->first();
             $lb = layanantambahan::where("isaktif", 1)->get();
             // dd($jasa);
@@ -63,9 +66,17 @@ class pembelianCon extends Controller
     public function tableorder($slug, $layanan_tambahan = [], $gratis = false)
     {
         $layanan = layanan::where("slug", $slug)->first();
+        $paket = false;
+        if($layanan->type == 1){
+            $paket = true;
+        }
         array_push($layanan_tambahan, $layanan->id);
         $tambahan = layanantambahan::wherein("id", $layanan_tambahan)->get();
         return view('order.table-order', compact("tambahan", "layanan", 'gratis'))->render();
+    }
+    public function addpaket($id){
+        session(['paket_id'=>$id]);
+        return $this->tableorder(session('order'));
     }
     public function cqty(Request $request)
     {
@@ -79,14 +90,16 @@ class pembelianCon extends Controller
 
     public function order(Request $request, ipaymuController $ip)
     {
-
+        // DB::transaction();
+        // try {
         $validasiData = $request->validate([
             'tgl' => '',
             'wa' => 'required|numeric',
             'email' => 'required:email:dns',
             "plat" => "required",
             "metpem" => "required",
-            "qunatity" => "max:2",
+            "quantity" => "max:2",
+            "durasi" => "max:2",
         ]);
         $getplat = new PlatGratisController();
         $platgratis = $getplat->dataPlatgratis();
@@ -97,6 +110,7 @@ class pembelianCon extends Controller
 
         $lastRecord = tjual::latest()->first();
         $main = layanan::where("slug", Session("order"))->first();
+        $getlayanan = $main->layanan();
         if (strtoupper($validasiData["plat"]) == $lastRecord->plat) {
             $createdAt = Carbon::parse($lastRecord->created_at);
             $now = Carbon::now();
@@ -108,6 +122,7 @@ class pembelianCon extends Controller
             }
         }
         $opsiqty = 1;
+        // add on bisa tambah
         $opsistring = " ";
         if ($main->formqty > 0) {
             if ($request->has('quantity')) {
@@ -116,6 +131,10 @@ class pembelianCon extends Controller
                     $opsistring = " ($opsiqty X)";
                 }
             }
+        }
+        // jika tipe paket
+        if($main->type == 1){
+            $opsistring= " (".$getlayanan->paket." )";
         }
 
         $metode = payget::where("channel_code", $validasiData["metpem"])->first();
@@ -132,7 +151,6 @@ class pembelianCon extends Controller
         } elseif ($waktu->isBetween('14:31', '23:59')) {
             $sip = '1';
         }
-
         if (auth()->user()) {
             if (auth()->user()->sip == "3") {
                 if ($waktu->isBetween('11:00', '20:00')) {
@@ -152,14 +170,14 @@ class pembelianCon extends Controller
             // return $getProduct->sum("harga") + $main->harga;
             $product = $getProduct->pluck("layanan")->toArray();
             array_push($product, $main->layanan);
-            $qtyoption =   $getProduct->pluck("qtyoption")->toArray();
+            // $qtyoption =   $getProduct->pluck("qtyoption")->toArray();
             $count = count($product);
             $qty = [];
             for ($i = 1; $i < $count; $i++) {
                 array_push($qty, 1);
             }
             $harga =   $getProduct->pluck("harga")->toArray();
-            array_push($harga, $main->harga * $opsiqty);
+            array_push($harga, $getlayanan->harga * $opsiqty);
             if ($gratis) {
                 $jumlah_harga = count($harga);
                 for ($i = 0; $i < $jumlah_harga; $i++) {
@@ -170,16 +188,16 @@ class pembelianCon extends Controller
 
                 $amount = 0;
             }else{
-                $amount = ($getProduct->sum("harga") - $getProduct->sum("diskon")) + ($main->harga * $opsiqty - $main->diskon * $opsiqty);
+                $amount = ($getProduct->sum("harga") - $getProduct->sum("diskon")) + ($getlayanan->harga * $opsiqty - $getlayanan->diskon * $opsiqty);
             }
         } else {
             $product = [$main->layanan];
             $qty =   [$main->qtyoption];
-            $harga =   [($main->harga * $opsiqty - $main->diskon * $opsiqty)];
+            $harga =   [($getlayanan->harga * $opsiqty - $getlayanan->diskon * $opsiqty)];
             if($gratis){
                 $amount =0;
             }else{
-                $amount = ($main->harga * $opsiqty - $main->diskon * $opsiqty);
+                $amount = ($getlayanan->harga * $opsiqty - $getlayanan->diskon * $opsiqty);
             }
         }
         $isaktif = 0;
@@ -194,7 +212,16 @@ class pembelianCon extends Controller
             $userid = null;
         }
 
+        $durasi = 0;
+        $start_at = null;
+        $end_at = null;
+        if($main->type == 1){
+            $durasi = $request->durasi;
+            $start_at = date('Y-m-d');
+            $end_at = date('Y-m-d', strtotime('+'.$request->durasi.' day'));
+        }
         if ($validasiData["metpem"] == "tunai") {
+            
             $order = tjual::create([
                 "id" => Str::uuid(),
                 "metpem" => $metode->channel_code,
@@ -210,21 +237,31 @@ class pembelianCon extends Controller
                 "totalbayar" => $amount,
                 "status" => "pending",
                 "jenis_kendaraan" => null,
+                "type_layanan" => $getlayanan->type_layanan,
+                "start_at" => $getlayanan->start_at,
+                "end_at" => $getlayanan->end_at,
+                "durasi" => $getlayanan->durasi,
+                "sisa_durasi" => $getlayanan->durasi,
                 "plat" =>  strtoupper($validasiData["plat"]),
                 "user_id" => $userid,
-                "sip" => $sip
+                "sip" => $sip,
+                'start_at' =>  $start_at,
+                'end_at' =>$end_at
             ]);
             $sts = 0;
             for ($i = 1; $i <= $main->qtyoption; $i++) {
                 if (Auth::user()) {
                     $i == 1 ? $sts = 1 :  $sts = 0;
                 }
+                if($main->type == 1){
+                    $i == 1 ? $sts = 0 :'';
+                }
                 if($gratis){
                     $ttharga=0;
                     $ttdiskon =0;
                 }else{
-                    $ttharga = $main->harga * $opsiqty;
-                    $ttdiskon = $main->diskon * $opsiqty;
+                    $ttharga = $getlayanan->harga * $opsiqty;
+                    $ttdiskon = $getlayanan->diskon * $opsiqty;
                 }
                 tjual1::create([
                     "id" => Str::uuid(),
@@ -247,6 +284,18 @@ class pembelianCon extends Controller
                         "diskon" => $gratis ? 0 : $gp->diskon
                     ]);
                 }
+            }
+            if($order->type == 1){
+                TjualPaket::create([
+                    'tjual_id' => $order->id,
+                    'start_at' => $order->start_at,
+                    'nama_paket' => $order->paket,
+                    'end_at' => $order->end_at,
+                    'durasi' => $getlayanan->durasi,
+                    'status' => 1,
+                    'sisa_durasi'=> $getlayanan->durasi,
+                    'status' => 1,
+                ]);
             }
             if (Auth::user()) {
                 $order->input_by = auth()->user()->id;
@@ -284,6 +333,11 @@ class pembelianCon extends Controller
                 "qtyterpakai" => 1,
                 "isaktif" => $isaktif,
                 "layanan_id" => $main->id,
+                "type_layanan" => $getlayanan->type_layanan,
+                "start_at" => $getlayanan->start_at,
+                "end_at" => $getlayanan->end_at,
+                "durasi" => $getlayanan->durasi,
+                "sisa_durasi" => $getlayanan->durasi,
                 "totalbayar" => $amount,
                 "status" => "pending",
                 "jenis_kendaraan" => null,
@@ -300,8 +354,8 @@ class pembelianCon extends Controller
                     $ttharga=0;
                     $ttdiskon =0;
                 }else{
-                    $ttharga = $main->harga * $opsiqty;
-                    $ttdiskon = $main->diskon * $opsiqty;
+                    $ttharga = $getlayanan->harga * $opsiqty;
+                    $ttdiskon = $getlayanan->diskon * $opsiqty;
                 }
                 tjual1::create([
                     "id" => Str::uuid(),
@@ -332,15 +386,34 @@ class pembelianCon extends Controller
                 "data" => []
             ]);
         }
+        //create if order paket
+        if($order->type == 1){
+            TjualPaket::create([
+                'tjual_id' => $order->id,
+                'start_at' => $order->start_at,
+                'nama_paket' => $order->paket,
+                'end_at' => $order->end_at,
+                'durasi' => $getlayanan->durasi,
+                'status' => 1,
+                'sisa_durasi'=> $getlayanan->durasi,
+                'status' => 1,
+            ]);
+        }
         if (Auth::user()) {
             $order->input_by = auth()->user()->id;
             $order->save();
         }
+        // DB::commit();
         return response()->json([
             "success" => true,
             "data" => url("payment/" . $order->id)
         ]);
-        // return redirect("payment/" . $order->id);
+        // } catch (\Throwable $th) {
+        //     DB::rollBack();
+        //     throw $th;
+        // }
+        
+        return redirect("payment/" . $order->id);
     }
     public function bayar($slug)
     {
@@ -436,70 +509,81 @@ class pembelianCon extends Controller
     }
     public function kirirmnota()
     {
-        return $this->tiketpdf('afffdd49-48bb-462a-8d66-fae71ac9af3b');
+        return $this->tiketpdf('cd86925b-d545-4e41-b793-d55f7a733c15');
     }
 
-    public function tiketpdf($slug)
+    public function tiketpdf($slug, $true=true)
     {
-        $tjual = tjual::findOrFail($slug);
+        $this->sendNotif($slug,$true);
+        
+        // $tjual = tjual::findOrFail($slug);
 
-        if ($tjual->status ==  "berhasil") {
+        // if ($tjual->status ==  "berhasil") {
 
-            $tikets = tjual1::where("tjual_id", $slug)->get();
-            $tjual1 = $tikets;
-            $pdf = PDF::loadView('download2', compact('tjual', 'tikets'));
-            $pdf->setPaper(array(0, 0, 250, 380));
-            $tempFilePath = storage_path('app/public/qrcode.pdf');
-            $pdf->save($tempFilePath);
-            $addon = tjual2::where("tjual_id", $tjual->id)->get();
-            $nota = PDF::loadView("download", compact("tjual", "tjual1", "addon"));
-            $nota->setPaper(array(0, 0, 250, 480));
-            $tempFilePathnota = storage_path('app/public/nota.pdf');
-            $nota->save($tempFilePathnota);
-            $notapdf = file_get_contents($tempFilePathnota);
-            $qrpdf = file_get_contents($tempFilePath);
+        //     $tikets = tjual1::where("tjual_id", $slug)->get();
+        //     $tjual1 = $tikets;
+        //      $pdf = PDF::loadView('download2', compact('tjual', 'tikets'));
+        //     // $pdf->setPaper(array(0, 0, 250, 380));
+        //     $pdf->setPaper('rool')
+        //     ->setOptions(['isPhpEnabled' => true]) 
+        //     ->setOptions(['width' => ' 250mm']);
+        //     $tempFilePath = storage_path('app/public/qrcode.pdf');
+        //     $pdf->save($tempFilePath);
+        //     $addon = tjual2::where("tjual_id", $tjual->id)->get();
+        //     $nota = PDF::loadView("download", compact("tjual", "tjual1", "addon"));
+        //     // $nota->setPaper(array(0, 0, 250, 480));
+        //     $nota->setPaper('rool')
+        //     ->setOptions(['isPhpEnabled' => true]) 
+        //     ->setOptions(['width' => ' 250mm']);
+        //     $tempFilePathnota = storage_path('app/public/nota.pdf');
+        //     // return $nota->stream();
+        //     $nota->save($tempFilePathnota);
+        //     $notapdf = file_get_contents($tempFilePathnota);
+        //     $qrpdf = file_get_contents($tempFilePath);
 
 
-            $text = "📝 Nota Transaksi Smartwax 🛒\n---\n";
-            $text1 = "🔍Qrcode Pembelian.  \n ";
-            $encodedText = urlencode($text);
-            $encodedText1 = urlencode($text1);
-            // kirim ke wa 
-            // Membuka file dan membacanya sebagai string
-            // Mengirim file nota.pdf
-            Http::attach(
-                'file',
-                $notapdf,
-                'nota.pdf'
-            )->post(env('WA_URL') . "kirimfile", [
-                "idclient" => intval(env('WA_IDCLIENT')),
-                "number" => $tjual->wa,
-                "pesan" => $text,
+        //     $text = "📝 Nota Transaksi Smartwax 🛒\n---\n";
+        //     $text1 = "🔍Qrcode Pembelian.  \n ";
+        //     $encodedText = urlencode($text);
+        //     $encodedText1 = urlencode($text1);
+        //     // kirim ke wa 
+        //     // Membuka file dan membacanya sebagai string
+        //     if($tjual->qty > 1 && $true){
+        //         Http::attach(
+        //             'file',
+        //             $qrpdf,
+        //             'QrCode pembelian.pdf'
+        //         )->post(env('WA_URL') . "kirimfile", [
+        //             "idclient" => intval(env('WA_IDCLIENT')),
+        //             "number" => $tjual->wa,
+        //             "pesan" => $text1,
+    
+        //         ]);
+        //     }
+        //    $data = Http::attach(
+        //         'file',
+        //         $notapdf,
+        //         'nota.pdf'
+        //     )->post(env('WA_URL') . "kirimfile", [
+        //         "idclient" => intval(env('WA_IDCLIENT')),
+        //         "number" => $tjual->wa,
+        //         "pesan" => $text,
+        //     ]);
+           
+            
 
-            ]);
-            // Http::attach(
-            //     'file',
-            //     $qrpdf,
-            //     'QrCode pembelian.pdf'
-            // )->post(env('WA_URL') . "kirimfile", [
-            //     "idclient" => intval(env('WA_IDCLIENT')),
-            //     "number" => $tjual->wa,
-            //     "pesan" => $text1,
+        //     // $sendnotif = [
+        //     //     'title' => 'Pembelian  Berhasil!',
+        //     //     'subject' => 'Steam App',
+        //     //     'url' => '',
+        //     //     'body' => 'Haloo Bapak/ibu , Silahkan download data Tiket Cuci Anda  dibawah: ',
+        //     // ];
+        //     // Mail::to(strtolower($tjual->email))->send(new sendMail($sendnotif, $tempFilePath, $tempFilePathnota));
 
-            // ]);
-
-            $sendnotif = [
-                'title' => 'Pembelian  Berhasil!',
-                'subject' => 'Steam App',
-                'url' => '',
-                'body' => 'Haloo Bapak/ibu , Silahkan download data Tiket Cuci Anda  dibawah: ',
-            ];
-            Mail::to(strtolower($tjual->email))->send(new sendMail($sendnotif, $tempFilePath, $tempFilePathnota));
-
-            unlink($tempFilePath);
-            unlink($tempFilePathnota);
-            // return $pdf->stream('download.pdf');
-        }
+        //     unlink($tempFilePath);
+        //     unlink($tempFilePathnota);
+        //     // return $pdf->stream('download.pdf');
+        // }
     }
 
     public function find($id)
@@ -507,19 +591,78 @@ class pembelianCon extends Controller
         $search = htmlspecialchars($id);
         try {
             $pelanggan =  tjual::select('wa', 'email')->where('plat',  $search)->firstorFail();
+            // dd($pelanggan);
+            $isPaket =false;
+            $isexpired = true;
+            $message = '';
+            $slug ="";
+            $action = false;
+            if($pelanggan){
+                $paket = tjual::where(['plat' => $search, 'type_layanan'=>1, 'isaktif'=> 1,'status'=> 'berhasil'])->first();
+                if($paket){
+                    //cek end_date apakah sudah lewat dari tanggal sekarang 
+                    $isPaket =true;
+                    $message = "Paket Langganan Terkahir Telah berakhir";
+                    if(!Carbon::parse($paket->end_at)->isPast()){
+                        $isexpired = false;
+                        if(auth()->check()){
+                            $action =true;
+                        $slug = 'langganan/'.$paket->id;
+
+                            $message="Paket Langganan Masih Tersedia!";
+                        }else{
+                            $message="Paket Langganan Masih Tersedia. Silahkan datang langsung ke SmartWax untuk pemakaian.";
+                        $slug = url('langganan/'.$paket->id);
+
+                        }
+                    }
+                    $paket->end_date;
+                }
+
+            }
             return response()->json([
                 "success" => true,
                 "wa" => $pelanggan->wa,
                 "email" => $pelanggan->email,
+                'paket' => $isPaket,
+                'expire' => $isexpired,
+                'message' => $message,
+                "slug" => $slug,
+                "action" => $action,
 
             ]);
         } catch (\Throwable $th) {
+            // throw $th;
             return response()->json([
                 "success" => false,
                 "wa" => "",
-                "email" => ""
-
+                "email" => "",
+                'paket'=> false,
+                "message"=>"",
+                "slug"=>"",
+                "action" => false,
             ]);
         }
+    }
+
+    public function langganan($slug){
+        try {
+            $langganan = tjual::find($slug);
+        } catch (\Throwable $th) {
+            return redirect('/');
+        }
+    }
+
+    public function sendNotif($notif, $true = true){
+        try {
+            if($true){
+                $url = 'http://vittindo.my.id/steamapp/kirimwa/'.$notif;
+            }else{
+                $url = 'http://vittindo.my.id/steamapp/kirim/'.$notif;
+            }
+            $data = Http::get($url);
+        } catch (\Throwable $th) {
+        }
+
     }
 }

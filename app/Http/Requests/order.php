@@ -34,6 +34,8 @@ class order extends FormRequest
             'wa' => 'required|numeric',
             'email' => '|email:dns',
             "plat" => "required",
+            'type' => 'required',
+            'durasi' => 'required_if:type,1',
             "metpem" => "required"
         ];
 

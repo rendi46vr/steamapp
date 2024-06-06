@@ -205,8 +205,8 @@ if ($pay->metpem == "tunai") {
                                     @if($pay->metpem != "tunai")
                                     <a class="btn btn-primary btn-block" href="{{$pay->payget->payment_instructions_doc}}" target="_blank" rel="noopener">Cara Bayar</a>
                                     @endif
-                                    <a href="{{url('/')}}" class="btn btn-secondary btn-block text-white mt-2">
-                                        Pesan Ulang </a>
+                                    <a href="{{url('/form-order/'.$pay->layanan->slug)}}" class="btn btn-secondary btn-block text-white mt-2">
+                                        Order Lagi </a>
                                 </div>
                             </div>
                         </div>
@@ -277,7 +277,6 @@ if ($pay->metpem == "tunai") {
             // window.jsPDF = window.jspdf.jsPDF;
 
             function cektransaksi() {
-                console.log("ok");
                 // var doc = new jspdf();
 
                 doReq("cekTransaksi/" + "{{$pay->id}}", null, (res) => {

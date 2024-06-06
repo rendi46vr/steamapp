@@ -1,0 +1,2 @@
+RewriteEngine On
+RewriteRule ^steamapp/?$ http://vittindo.my.id:8080/steamapp/public/index.php [L,R=301]

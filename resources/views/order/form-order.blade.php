@@ -25,16 +25,28 @@ use App\Tools\tools;
                 <div class="smw-card-header"> <i class="fa fa-address-card i-orange" aria-hidden="true"></i>
                     Info Pelanggan
                 </div>
+                <input type="hidden", name="act" value="0" id="acttype">
                 <div class="smw-card-body pt-2">
                     <?php
                     if (session()->has("user")) {
 
                     ?>
-                        <div class="form-group vr-form">
+                    <div class="row">
+                        <div class="form-group vr-form col-8">
                             <label for="">No. Plat Kendaraan</label>
-
+                            <input type="hidden" name="type" value='{{$jasa->type}}'>
                             <input type="text" name="plat" id="" class="form-control msgplat" value="{{session('user')['plat']}}" placeholder="No PLAT" id="noplat" aria-describedby="helpId">
                         </div>
+                        <div style="align-self: flex-end;">
+                               <button class="btn btn-info cekplat">Cek</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="statuspaket"></label>
+                        <a class="btn btn-success langganan" style="display: none;" href="" data-act="0">Pakai Langganan</a>
+                        
+                    </div>
                         <div class="form-group vr-form">
                             <label for="">Nomor Whatsapp</label>
                             <input type="number" name="wa" id="" class="form-control msgwa" placeholder="08............" value="{{session('user')['wa']}}" id="nowa"" aria-describedby=" helpId">
@@ -46,10 +58,25 @@ use App\Tools\tools;
                         </div>
 
                     <?php } else { ?>
-
-                        <div class="form-group vr-form">
+                        <div class="row">
+                        <div class="form-group vr-form col-8">
                             <label for="">No. Plat Kendaraan</label>
+                            <input type="hidden" name="type" value='{{$jasa->type}}'>
                             <input type="text" name="plat" id="" class="form-control msgplat" placeholder="No PLAT..." id="noplat" aria-describedby="helpId">
+                        </div>
+                        <div class="form-group col-4 d-flex align-item-end ">
+                        <div style="align-self: flex-end;">
+                               <button class="btn btn-info cekplat">Cek</button>
+                            </div>
+                        </div>
+                    </div>
+                        <div class="form-group">
+                            <label class="statuspaket"></label>
+                            @if(auth()->user())
+                            <a class="btn btn-success langganan" style="display: none;" href="" data-act="0">Pakai Langganan</a>
+                            @else
+                            <a class="btn btn-primary langganan" style="display: none;" href="" data-act="0">Detail Langganan</a>
+                            @endif
                         </div>
                         <div class="form-group vr-form">
                             <label for="">Nomor Whatsapp</label>
@@ -75,6 +102,18 @@ use App\Tools\tools;
                         </div>
                         <input type="hidden" name="quantity" max="6" min="1" id="" value="1" class=" msgquantity " placeholder="" value="1" id="quantity"" aria-describedby=" helpId">
                     </div>
+                    @endif
+                    @if($jasa->type == 1)
+                        <div id="duration-input " class="form-group vr-form">
+                            <label for="duration" style="font-size: 16px;" class="col-form-label">Durasi Waktu</label>
+                            <select id="duration" name="durasi" class="form-control msgduration py-0">
+                                <option value="" selected disabled hidden>Pilih Waktu Langganan</option>
+                                @foreach($jasa->paket as $paket)
+                                <option value="{{$paket->id}}">{{$paket->nama_paket}} - {{tools::rupiah($paket->harga)}}</option>
+                                @endforeach
+                               
+                            </select>
+                        </div>
                     @endif
                 </div>
                 <div class="smw-card-header">
@@ -137,7 +176,7 @@ use App\Tools\tools;
                 </div>
 
                 <div class="form-group mt-3 d-flex justify-content-end">
-                    <button class="btn btn-orange lanjut-order resetFalse" type="submit"> Lanjutkan Pembayaran <i class="fa fa-arrow-right" aria-hidden="true"></i></button>
+                    <button class="btn btn-orange lanjut-order resetFalse loading" type="submit"> Lanjutkan Pembayaran <i class="fa fa-arrow-right" aria-hidden="true"></i></button>
                 </div>
             </div>
             <div class="col-lg-6 col-md-6">
@@ -148,6 +187,12 @@ use App\Tools\tools;
     </div>
 </form>
 <script type="text/javascript">
+    $('#duration').on('change', function(e){
+        doReq('addpaket/'+$(this).val(),null,(res)=>{
+            $('.table-order').html(res);
+        });     
+    });
+
     function refreshData(res) {
         if (res.success) {
             window.location.href = res.data;
@@ -179,15 +224,93 @@ use App\Tools\tools;
     $(document).on("change", ".msgplat", function() {
         const ini = $(this).val();
         if (ini.length > 4) {
-            doReq('find/' + ini, null, function(res) {
-                if (res.success) {
-                    $('.msgwa').val(res.wa)
-                    $('.msgemail').val(res.email)
-                }
-            })
-            c('asd')
+            cekDataPlat(ini);
+        }
+    })
+    $(document).on("click", ".cekplat", function(e) {
+        e.preventDefault()
+        const button = $(this);
+        let msgplat = $('.msgplat')
+        let ini = $('.msgplat').val();
+        if (ini.length > 4) {
+            button.html("<span class='spinner-border spinner-border-sm' role='status'></span>Checking...")
+            cekDataPlat(ini);
+            msgplat.parent().find('help-block').text('')
+            checkedData()
+        }else{
+            if (msgplat.parent().find('.help-block').length === 0) {
+            var helpBlock = $('<div class="help-block  f12  text-danger with-errors"> Plat Harus diisi Minimal 4 Karakter </div>');
+            msgplat.parent().append(helpBlock);
+            } else {
+                msgplat.parent().find('help-block').text('Plat Harus diisi  Minimal 4 Karakter');
+            }
         }
 
+
     })
+    function cekDataPlat(ini){
+        const button = $('.cekplat')
+        doReq('find/' + ini, null, function(res) {
+            if (res.success) {
+                $('.msgwa').val(res.wa)
+                $('.msgemail').val(res.email)
+                const msg =$('.statuspaket'),lgn = $('.langganan');
+                let act =0;
+                if(res.paket){
+                    msg.html(res.message)
+                    if(res.expire){
+                        msg.removeClass('text-success').addClass('text-danger');
+                   }else{
+                        if(res.action){
+                            msg.removeClass('text-danger').addClass('text-success');act =1;
+                        }else{
+                            msg.removeClass('text-danger').addClass('text-primary');act =0;
+                        }
+                        lgn.show().attr('href',res.slug);
+                        $('#acttype').val(act);
+                    }
+                }else{
+                    lgn.hide()
+                }
+            }
+            button.html('Cek')
+        })
+    }
+    window.addEventListener('popstate', function (event) {
+        location.reload();
+    });
+    <?php if(auth()->user()) : ?>
+        $(document).ready(function(){
+            $(document).on('click','.langganan', function(e){
+                e.preventDefault()
+                c('helo')
+                const lgn = $('#acttype').val();
+                const target =$(this).attr('href');
+                if(lgn ==1){
+                    doReq(target, null , function(res){
+                        if(res.status){
+                            Swal.fire(
+                                'Sukses!',
+                                'Langganan Berhasil Terpakai',
+                                'success'
+                            ).then(() => {
+                                window.location.href= baseUri(target)
+                            });
+                        }else{
+                            Swal.fire(
+                                'Gagal!',
+                                'Langganan Tidak Valid atau Kadaluarsa',
+                                'error'
+                            ).then(()=>{
+                                window.location.href= baseUri(target)
+
+                            })
+                        }
+                    });
+                }
+            });
+        });
+
+    <?php endif ?>
 </script>
 @endsection

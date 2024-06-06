@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\payget;
 use App\Models\pesanan;
 use App\Models\tjual;
+use App\Models\tjual1;
 use App\Models\tjual2;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -117,7 +118,6 @@ class ipaymuController extends Controller
         $pay = tjual::with(["dataorder", "payget", "payment", "addon"])->findOrFail($slug);
 
         $addon = tjual2::with("layanantambahan")->where("tjual_id", $slug)->get();
-        // dd($pay->payment);
         return view("payment.payment", compact("pay", "addon"));
     }
 
@@ -127,9 +127,6 @@ class ipaymuController extends Controller
         try {
 
             $transaksi = tjual::where("np", $request->sid)->firstOrFail();
-            // if ($request->status_code == 1) {
-            // } elseif ($request->status_code == 0) {
-            // }
             $transaksi->status = $request->status;
             $transaksi->save();
             //kirim email

@@ -14,6 +14,6 @@ class tjual1 extends Model
 
     public function tjual()
     {
-        return  $this->belongsTo(tjual::class, 'tjual_id', 'id');
+        return  $this->hasOne(tjual::class, 'tjual_id', 'id');
     }
 }

@@ -65,11 +65,16 @@ class layananController extends Controller
         $validasiData = $request->validate([
             'layanan' => 'required|max:255',
             'deskripsi' => 'required',
-            'harga' => 'required:number:max:20',
-            'diskon' => 'numeric|lt:harga',
-            'qtyoption' => 'required:number:max:99',
+            // 'harga' => 'numeric:max:20',
+            // 'diskon' => 'numeric|lt:harga',
+            'type' => 'string|max:1',
+            'qtyoption' => 'numeric',
+            'durasi' => 'string|max:255',
         ]);
         $validasiData["slug"] =  Str::slug($validasiData["layanan"], "-");
+        if($request->type == 1){
+            $validasiData['durasi'] =  $request->durasi;
+        }
         layanan::create($validasiData);
         $layanan = $this->tablelayanan(1, false, false);
         return response()->json([

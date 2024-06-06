@@ -30,25 +30,33 @@ function rupiah($angka)
         <div class="col-lg-6 col-md-6 col-12">
             <div class="mx-1 single-tiket">
                 <div class="row">
-                    <div class="col-9 mhs">
+                    <div class="@if($t->type != 1) col-9 @else col-12 @endif mhs">
                         <span class="title">{{$t->layanan}}</span>
                         <div class="deskripsi">
                             <label>Deskripsi</label>
                             <span class="desc">
+                            @if($t->type != 1)
                                 {{$t->deskripsi}}
+                            @else
+                                @foreach($t->paket as $paket)
+                                <span style="line-height:1 !important; width: 100%; display: block !important;" class="mt-1" >{{$loop->iteration}}. {{$paket->nama_paket}}  - <font color="red"> {{rupiah($paket->harga)}}</font></span>
+                                @endforeach
+                            @endif
                             </span>
                         </div>
                     </div>
+                    @if($t->type != 1)
                     <div class="col-3 p-0">
                         <div class="price">
                             <label>Mulai Dari</label>
                             @if($t->diskon > 0)
-                            <s class="text-danger fm">{{rupiah($t->harga)}}</s class="text-danger"><br>
+                            <s class="text-danger fm">{{rupiah($t->harga)}}</s class="text-danger">
                             @endif
                             <span class="harga">{{rupiah($t->harga - $t->diskon)}}</span>
                             <label class="mt-1" style="color: #5860fcde;">{{$t->qtyoption}}x Pakai</label>
                         </div>
                     </div>
+                    @endif
                 </div>
 
                 <div class="tiket-footer">

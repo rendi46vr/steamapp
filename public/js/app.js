@@ -44,7 +44,7 @@ $(document).ready(function(){
 
            })
         }
-        c(array)
+        // c(array)
 
 
 
@@ -66,16 +66,15 @@ $(document).on('click', '.deldata', function() {
     deldata($(this).data("uniq"))
 })
 //create and update
-$(document).on('click', "button[type=submit]", function(e) {
+$(document).on('click', "button[type=submit]:not([disabled])", function(e) {
     e.preventDefault()
-    c('sdada')
     const form = $(this).closest('form')
     action =  form.attr('id');
-    c(form)
-    console.log(action);
+    // c(form)
+    // console.log(action);
     name_class = 'App/Http/Requests/' + action;
     my_form = form
-    c(form.hasClass('another'))
+    // c(form.hasClass('another'))
     if($(this).hasClass("resetFalse")){
         validate(action, refreshData, false)
     }else{
@@ -127,13 +126,34 @@ function    edit(u,c) {
 }
 
 function deldata(u) {
-    doReq(u, null, refreshData);
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            doReq(u, null, refreshData);
+            Swal.fire(
+                'Deleted!',
+                'Your data has been deleted.',
+                'success'
+            )
+        }
+    })
 }
 
 function validate(a,r, b=true) {
     var data = my_form.serializeArray();
     var mydata = {}
     console.log(data)
+    let loading = my_form.find('.loading');
+    const textDefaultButton = loading.html(); 
+    loading.html("<span class='spinner-border spinner-border-sm' role='status'></span> Processing... ")
+    loading.closest('button').attr('disabled','disabled');
 
     data.push({
         name: 'class',
@@ -183,7 +203,7 @@ function validate(a,r, b=true) {
                     const mymo = $('#' + my_form.closest('.modal').attr('id'))
                     mymo.modal('hide')
                     b ? my_form[0].reset(): '';
-                    c()
+                    // c()
                     doReq(a ,mydata,r)
                     my_form.find('.help-block').html('')
                 }
@@ -214,6 +234,9 @@ function validate(a,r, b=true) {
                 validated = false;
                 buton_submit = false;
             }
+            loading.html(textDefaultButton)
+            loading.closest('button').removeAttr('disabled');
+
         },
         error: function(xhr) {
             // console.log(xhr);
@@ -295,8 +318,8 @@ function cnota(data){
 }
 function baseUri(uri = ''){
     let url =window.location.origin+"/";
-    const secondURI ="http://vittindo.my.id:8083/"
-    url == secondURI ? url = secondURI+"vittindo-web/public/": '';
+    const secondURI ="http://vittindo.my.id/"
+    url == secondURI ? url = secondURI+"steamapp/": '';
     uri != '' ? url = url+uri:'';
     return url;
 }

@@ -28,7 +28,9 @@ class addlayanan extends FormRequest
             'deskripsi' => 'required',
             'harga' => 'required:number:max:20',
             'diskon' => 'numeric|lt:harga',
-            'qtyoption' => 'required:number:max:99',
+            'type' => 'string|max:1',
+            'qtyoption' => 'numeric',
+            'durasi' => 'string|max:255',
         ];
         return $data;
     }

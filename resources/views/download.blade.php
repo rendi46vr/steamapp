@@ -147,7 +147,7 @@ use App\Tools\tools;
     <table class="info-table">
         <tr>
             <td>Sisa Saldo Cuci:</td>
-            <td> {{$tjual->qty - $tjual->qtyterpakai}}x Cuci</td>
+            <td> {!!$tjual->sisaSaldo()!!}</td>
         </tr>
     </table>
 
@@ -162,7 +162,7 @@ use App\Tools\tools;
         <tbody>
             <tr>
                 <td>{{$tjual->layanan->layanan}}</td>
-                <td>{{$tjual->qty}}x Cuci</td>
+                <td>{{$tjual->qty->sisaSaldo(false)}}</td>
                 <td>{{ tools::rupiah($tjual->dataorder->harga - $tjual->dataorder->diskon, false)}}</td>
             </tr>
             @foreach($addon as $ao)
@@ -180,14 +180,12 @@ use App\Tools\tools;
         <thead>
             <tr>
                 <th>Tanggal Pemakaian</th>
-                <th> Cuci</th>
             </tr>
         </thead>
         <tbody>
             @foreach($tjual1 as $t1)
             <tr>
                 <td>{{ date('d, M Y', strtotime($t1->updated_at)) }}</td>
-                <td>1x</td>
             </tr>
             @endforeach
         </tbody>
