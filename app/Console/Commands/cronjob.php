@@ -58,7 +58,7 @@ class cronjob extends Command
         Log::info("=============== Cronjob finish =================");
 
         //
-        $order2 = tjual::where(['type_layanan'=> 1, 'is_aktif'=>1])->get();
+        $order2 = tjual::where(['type_layanan'=> 1, 'isaktif'=>1])->get();
         foreach ($order2 as $od) {
             //cek apakah $od kolom jarak hari end_date dari sekarang, kemudian update sisa_durasi, jika end_date sudah lewat maka update is_aktif jadi 0 dan sisa_durasi jadi 0
             // Ambil tanggal akhir (end_date) dari record
@@ -76,6 +76,8 @@ class cronjob extends Command
                 $od->isaktif = 0;
                 $od->sisa_durasi = 0;
             }
+            $od->save();
+            $this->info($od->id." ".$daysDifference);
         }
     }
 }

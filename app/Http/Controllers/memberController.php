@@ -12,6 +12,7 @@ use App\Models\tjual1;
 use App\Models\layanan;
 use App\Http\Controllers\pembelianCon;
 use App\Tools\tools;
+use Carbon\Carbon;
 
 class memberController extends Controller
 {
@@ -50,26 +51,52 @@ class memberController extends Controller
 
     public function memberorder($id, pembelianCon $pc)
     {
-        try {
+        // try {
             $tjual1 = tjual1::where('id', $id)->where("status", 0)->firstorFail();
-
-            try {
+            $isSubscribe = false;
+            $cek = tjual::where(['id'=>$tjual1->tjual_id, 'type_layanan'=> 1])->first();
+            if($cek){
+                $isSubscribe = true;
+            }
+            // try {
                 $tjual = tjual::where("id", $tjual1->tjual_id)->where("isaktif", 1)->firstOrFail();
                 $main = layanan::find($tjual->layanan_id);
-                $tjual->qtyterpakai = $tjual->qtyterpakai + 1;
-                $tjual->save();
-                if ($tjual->qtyterpakai >= $tjual->qty) {
-                    $tjual->isaktif = 0;
+                if($isSubscribe){
+                    $cek2 = tjual1::where('tjual_id', $tjual1->tjual_id)->where('created_at', '>=', Carbon::now()->subHour())->first();
+                    if (!$cek2) {
+                        tjual1::create([
+                            "id" => Str::uuid(),
+                            "tjual_id" => $tjual->id,
+                            "layanan_id" => $main->id,
+                            "harga" => 0,
+                            "diskon" =>0,
+                            "opsiqty" => 1,
+                            "name" => $main->layanan,
+                            "status" => 1
+                        ]);
+                    }
+                    $tjual->qtyterpakai =  $tjual->qtyterpakai +1;
                     $tjual->save();
+                    $msg = "Paket " . $main->layanan . " Berhasil digunakan";
+                }else{
+                    $tjual->qtyterpakai = $tjual->qtyterpakai + 1;
+                    $tjual->save();
+                    if ($tjual->qtyterpakai >= $tjual->qty) {
+                        $tjual->isaktif = 0;
+                        $tjual->save();
+                    }
+                    $tjual1->status = 1;
+                    $tjual1->save();
+                    $msg = "Tiket/Qrcode " . $main->layanan . " Berhasil digunakan";
                 }
-                $tjual1->status = 1;
-                $tjual1->save();
+
                 return response()->json([
                     "success" => true,
-                    "msg" => "Order " . $main->layanan . " Berhasil",
-                    "data" => $pc->cetaknota($tjual->id)
+                    "msg" => $msg,
+                    "data" => $pc->cetaknota($tjual->id),
+                    'data_id'=>$tjual->id
                 ]);
-            } catch (\Throwable $th) {
+            // } catch (\Throwable $th) {
                 $tjual = tjual::with("layanan")->where("tjual_id", $tjual1->tjual_id)->latest()->first();
                 Session::put("user", ["uid" => "", "plat" => $tjual->plat, "email" => $tjual->email, "wa" => $tjual->wa, "latest" => $tjual->layanan->slug]);
                 return response()->json([
@@ -78,15 +105,15 @@ class memberController extends Controller
                     "msg" => "Saldo Cuci Habis <br>Mau Beli Paket " . $tjual->layanan->layanan . " (" . tools::fRupiah($tjual->layanan->harga) . ") Lagi?",
                     "id" => ""
                 ]);
-            }
+            // }
             return $tjual;
-        } catch (\Throwable $th) {
+        // } catch (\Throwable $th) {
             return response()->json([
                 "success" => false,
                 "lanjut" => false,
                 "msg" => "Qr Code Tidak Valid",
             ]);
-        }
+        // }
     }
     public function belilagi($id)
     {

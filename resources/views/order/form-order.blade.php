@@ -52,10 +52,10 @@ use App\Tools\tools;
                             <input type="number" name="wa" id="" class="form-control msgwa" placeholder="08............" value="{{session('user')['wa']}}" id="nowa"" aria-describedby=" helpId">
                         </div>
 
-                        <div class="form-group vr-form">
+                        <!-- <div class="form-group vr-form">
                             <label for="">Email</label>
                             <input type="email" name="email" id="" class="form-control msgemail" placeholder="example@email.com" value="{{session('user')['email']}}" id="email"" aria-describedby=" helpId">
-                        </div>
+                        </div> -->
 
                     <?php } else { ?>
                         <div class="row">
@@ -82,10 +82,10 @@ use App\Tools\tools;
                             <label for="">Nomor Whatsapp</label>
                             <input type="number" name="wa" id="" class="form-control msgwa" placeholder="08............" id="#layanan_tambahan"" aria-describedby=" helpId">
                         </div>
-                        <div class="form-group vr-form">
+                        <!-- <div class="form-group vr-form">
                             <label for="">Email</label>
                             <input type="email" name="email" id="" class="form-control msgemail " placeholder="example@email.com" id="#layanan_tambahan"" aria-describedby=" helpId">
-                        </div>
+                        </div> -->
                     <?php } ?>
                     @if($jasa->formqty > 0)
 

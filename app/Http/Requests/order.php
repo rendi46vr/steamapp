@@ -32,7 +32,7 @@ class order extends FormRequest
         $data = [
             'tgl' => '',
             'wa' => 'required|numeric',
-            'email' => '|email:dns',
+            'email' => 'email:dns',
             "plat" => "required",
             'type' => 'required',
             'durasi' => 'required_if:type,1',

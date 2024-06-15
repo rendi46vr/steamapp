@@ -160,6 +160,7 @@ function rupiah($angka)
         function onScanSuccess(decodedText, decodedResult) {
             let newcode = decodedText;
             if (newcode != data) {
+                data=newcode;
                 if (count == 0) {
                     count = 1
                     doReq('memberorder/' + decodedText, null, function(res) {
@@ -171,15 +172,16 @@ function rupiah($angka)
                                 timer: 2000,
                                 button: false,
                             }).then((result) => {
-                                const iframe = document.getElementById("myIframe"); // Dapatkan elemen iframe menggunakan DOM
-                                const kodeHTML = res.data;
-                                iframe.style = "display:block";
-                                iframe.srcdoc = kodeHTML; // Atur srcdoc dengan kode HTML yang diinginkan
-                                iframe.onload = function() {
-                                    iframe.contentWindow.print();
-                                };
-                                iframe.style = "display:none";
+                                // const iframe = document.getElementById("myIframe"); // Dapatkan elemen iframe menggunakan DOM
+                                // const kodeHTML = res.data;
+                                // iframe.style = "display:block";
+                                // iframe.srcdoc = kodeHTML; // Atur srcdoc dengan kode HTML yang diinginkan
+                                // iframe.onload = function() {
+                                //     iframe.contentWindow.print();
+                                // };
+                                // iframe.style = "display:none";
                                 // $(".scan-area").hide();
+                                window.location.href = baseUri('langganan/'+res.data_id)
 
                                 count = 0
                             });

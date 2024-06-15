@@ -9,7 +9,7 @@ use App\Tools\tools;
             <th>No</th>
             <th>Plat</th>
             <th>Pelanggan</th>
-            <th>Email</th>
+            <th>No Whatsapp</th>
             <th>Pembayaran</th>
             <th>Waktu Order</th>
             <th>Saldo cuci</th>
@@ -18,6 +18,7 @@ use App\Tools\tools;
             <th>Jumlah</th>
             <th>Status</th>
             <th>Detail</th>
+            <th>Action</th>
         </tr>
     </thead>
     <tbody>
@@ -32,7 +33,7 @@ use App\Tools\tools;
                 <div class=" p-1 rounded bg-secondary text-white ">Non Member</div>
                 @endif
             </td>
-            <td>{{$t->email}}</td>
+            <td>{{$t->wa}}</td>
             <td>{{$t->payget->channel_description}}</td>
             <td>{{$t->created_at}}</td>
             <td>{{$t->qty}}</td>
@@ -68,11 +69,9 @@ use App\Tools\tools;
             <td>
                 <div class="p-1 detail rounded bg-primary text-white max-content pointer d-inline " data-add="detail/{{$t->id}}" data-plat="{{$t->plat}}" data-toggle="modal" data-target="#detail" title="Detail"><i class="fa fa-list-alt" aria-hidden="true"></i></div>
             </td>
-            <!-- <td>
-                @if($t->user_id == null)
-                <div class=" p-1 rounded bg-secondary text-white pointer createmember" data-add="addmember/{{$t->id}}" data-show=".dataTransaksi"><i class="fa fa-address-card" aria-hidden="true"></i> Buat Member</div>
-                @endif
-            </td> -->
+            <td>
+                <div class=" p-1 rounded bg-secondary text-white pointer kirimnota" data-add="kirimnota/{{$t->id}}" data-show=".dataTransaksi"><i class="fa fa-email" aria-hidden="true"></i>kirim-nota</div>
+            </td>
         </tr>
         @endforeach
         <tr>

@@ -50,7 +50,7 @@ function rupiah($angka)
                         <div class="price">
                             <label>Mulai Dari</label>
                             @if($t->diskon > 0)
-                            <s class="text-danger fm">{{rupiah($t->harga)}}</s class="text-danger">
+                            <s class="text-danger fm">{{rupiah($t->harga)}}</s><br>
                             @endif
                             <span class="harga">{{rupiah($t->harga - $t->diskon)}}</span>
                             <label class="mt-1" style="color: #5860fcde;">{{$t->qtyoption}}x Pakai</label>

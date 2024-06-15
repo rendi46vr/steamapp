@@ -79,7 +79,14 @@ class layanantambahanController extends Controller
     public function dellayanantambahan($id)
     {
         try {
-            layanantambahan::destroy($id);
+            $layanantambahan = layanantambahan::findorfail($id);
+            if ($layanantambahan->isaktif > 0) {
+                $layanantambahan->isaktif = 0;
+                $layanantambahan->save();
+            } else {
+                $layanantambahan->isaktif = 1;
+                $layanantambahan->save();
+            }
         } catch (\Throwable $th) {
         }
         $layanantambahan = $this->tablelayanantambahan(1, false, false);

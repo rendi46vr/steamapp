@@ -27,7 +27,7 @@ class addpaket extends FormRequest
         $data = [
             'nama_paket' => 'required|max:255',
             'layanan_id' => 'required',
-            'durasi' => 'numeric|max:99',
+            'durasi' => 'numeric|max:9999',
             'harga' => 'numeric',
         ];
         return $data;

@@ -9,7 +9,7 @@ use App\Tools\tools;
             <th>No</th>
             <th>Plat</th>
             <th>nomor</th>
-            <th>Email</th>
+            <!-- <th>Email</th> -->
             <th>Pembayaran</th>
             <th>Watktu Order</th>
             <!-- <th>Saldo Awal</th> -->
@@ -29,7 +29,7 @@ use App\Tools\tools;
             <td>
                 {{$t->wa}}
             </td>
-            <td>{{$t->email}}</td>
+            <!-- <td>{{$t->email}}</td> -->
             <td>{{$t->payget->channel_description}}</td>
             <td>{{$t->created_at}}</td>
             <td>{{$t->qty}}</td>

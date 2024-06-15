@@ -212,10 +212,10 @@ class UserController extends Controller
             $transaksi->where('input_by', auth()->user()->id);
         }
         $cut = $transaksi;
+        $transaksi = $transaksi->where("status", "berhasil")->orderby('created_at', 'desc')->paginate(20, ['*'], null, $page);
+        // return $transaksi;
         $tunai = $cut->where("status", "berhasil")->where("metpem", "tunai")->sum("totalbayar");
         $qris = $cut->where("status", "berhasil")->where("metpem", "qris")->sum("totalbayar");
-        $transaksi = $transaksi->where("status", "berhasil")->orderby('created_at', 'desc')->paginate(20, ['*'], null, $page);
-        // dd($transaksi);
         $pagination = tools::ApiPagination($transaksi->lastPage(), $page, 'pagetransaksi');
         return view("transaksi.tabletransaksi", compact("transaksi", "pagination", "tunai", "qris"))->render();
     }
@@ -550,4 +550,6 @@ class UserController extends Controller
             "data" => $data
         ]);
     }
+
+    
 }

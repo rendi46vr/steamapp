@@ -109,6 +109,16 @@ Data Transaksi
             }
         })
     })
+    $(document).on('click', '.kirimnota', function() {
+        doReq($(this).data("add"), null, (res) => {
+            if(res.success){
+                Swal.fire('Sukses!',res.message,'success')
+            }else{
+                Swal.fire('Sukses!',res.message,'success')
+            }
+        })
+    })
+    
 
  
 </script>

@@ -22,6 +22,7 @@ use App\Models\tjual2;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use App\Http\Controllers\PlatGratisController;
+use App\Models\logwa;
 use App\Models\PlatGratis;
 use App\Models\TjualPaket;
 use Illuminate\Support\Facades\DB;
@@ -95,12 +96,15 @@ class pembelianCon extends Controller
         $validasiData = $request->validate([
             'tgl' => '',
             'wa' => 'required|numeric',
-            'email' => 'required:email:dns',
+            'email' => 'email:dns',
             "plat" => "required",
             "metpem" => "required",
             "quantity" => "max:2",
             "durasi" => "max:2",
         ]);
+        if(!$request->has('email')){
+            $validasiData['email'] = 'smartwax@gmail.com';
+        }
         $getplat = new PlatGratisController();
         $platgratis = $getplat->dataPlatgratis();
         $gratis = false;
@@ -509,81 +513,119 @@ class pembelianCon extends Controller
     }
     public function kirirmnota()
     {
+        
         return $this->tiketpdf('cd86925b-d545-4e41-b793-d55f7a733c15');
+    }
+    public function kirimnota($slug)
+    {
+
+        $status = $this->sendNotif($slug, true);
+        $msg= 'Nota Berhasil Terkirim!';
+        if($status){
+            $msg = 'Nota Gagal Terkirm!';
+        }
+        
+        return response()->json([
+            "success" => $status ,
+            'message' => $msg
+        ]);
     }
 
     public function tiketpdf($slug, $true=true)
     {
-        $this->sendNotif($slug,$true);
+        $tjual = tjual::findOrFail($slug);
+        try {
+            //code...
+            // $cekwa = logwa::where('wa', $tjual->wa)->first();
+            // if($cekwa){
+            //     $lastUpdated = Carbon::parse($cekwa->updated_at);
+            //     if (Carbon::now()->diffInMinutes($lastUpdated) >= 60) {
+            //         $this->sendNotif($slug, true);
+            //     }else {
+            //         $cekwa->wa = $tjual->wa;
+            //         $cekwa->save();
+            //     }
+            // }
+        } catch (\Throwable $th) {
+            //throw $th;
+        }
         
-        // $tjual = tjual::findOrFail($slug);
 
-        // if ($tjual->status ==  "berhasil") {
+        if ($tjual->status ==  "berhasil") {
 
-        //     $tikets = tjual1::where("tjual_id", $slug)->get();
-        //     $tjual1 = $tikets;
-        //      $pdf = PDF::loadView('download2', compact('tjual', 'tikets'));
-        //     // $pdf->setPaper(array(0, 0, 250, 380));
-        //     $pdf->setPaper('rool')
-        //     ->setOptions(['isPhpEnabled' => true]) 
-        //     ->setOptions(['width' => ' 250mm']);
-        //     $tempFilePath = storage_path('app/public/qrcode.pdf');
-        //     $pdf->save($tempFilePath);
-        //     $addon = tjual2::where("tjual_id", $tjual->id)->get();
-        //     $nota = PDF::loadView("download", compact("tjual", "tjual1", "addon"));
-        //     // $nota->setPaper(array(0, 0, 250, 480));
-        //     $nota->setPaper('rool')
-        //     ->setOptions(['isPhpEnabled' => true]) 
-        //     ->setOptions(['width' => ' 250mm']);
-        //     $tempFilePathnota = storage_path('app/public/nota.pdf');
-        //     // return $nota->stream();
-        //     $nota->save($tempFilePathnota);
-        //     $notapdf = file_get_contents($tempFilePathnota);
-        //     $qrpdf = file_get_contents($tempFilePath);
+            $tikets = tjual1::where("tjual_id", $slug)->get();
+            $cek = tjual::where(['id'=>$slug, 'type_layanan'=> 1])->first();
+            if($cek){
+                $tikets = tjual1::where("tjual_id", $slug)->orderBy('created_at','asc')->limit(1)->get();
+            }
+            $addon = tjual2::where("tjual_id", $tjual->id)->get();
+
+            
+            $tjual1 = $tikets;
+            
+
+            $widthplus = count($tikets) * 22;
+            // $addonplus = count($addon) * 22;
+            $nota = PDF::loadView("download", compact("tjual", "tjual1", "addon"));
+            $nota->setPaper(array(0, 0, 250, 340 + $widthplus ));
+            $tempFilePathnota = storage_path('app/public/nota.pdf');
+            return $nota->stream();
+            $nota->save($tempFilePathnota);
+
+            $notapdf = file_get_contents($tempFilePathnota);
 
 
-        //     $text = "📝 Nota Transaksi Smartwax 🛒\n---\n";
-        //     $text1 = "🔍Qrcode Pembelian.  \n ";
-        //     $encodedText = urlencode($text);
-        //     $encodedText1 = urlencode($text1);
-        //     // kirim ke wa 
-        //     // Membuka file dan membacanya sebagai string
-        //     if($tjual->qty > 1 && $true){
-        //         Http::attach(
-        //             'file',
-        //             $qrpdf,
-        //             'QrCode pembelian.pdf'
-        //         )->post(env('WA_URL') . "kirimfile", [
-        //             "idclient" => intval(env('WA_IDCLIENT')),
-        //             "number" => $tjual->wa,
-        //             "pesan" => $text1,
-    
-        //         ]);
-        //     }
-        //    $data = Http::attach(
-        //         'file',
-        //         $notapdf,
-        //         'nota.pdf'
-        //     )->post(env('WA_URL') . "kirimfile", [
-        //         "idclient" => intval(env('WA_IDCLIENT')),
-        //         "number" => $tjual->wa,
-        //         "pesan" => $text,
-        //     ]);
+            $text = "📝 Nota Transaksi Smartwax 🛒\n";
+            $encodedText = urlencode($text);
+            // $encodedText1 = urlencode($text1);
+            // kirim ke wa 
+            // Membuka file dan membacanya sebagai string
+            if($tjual->qty > 1 || $tjual->type_layanan == 1){
+                if($true){
+                    //buar qr tiket jika perlu
+                    $pdf = PDF::loadView('download2', compact('tjual', 'tikets'));
+                    $pdf->setPaper(array(0, 0, 250, 380));
+                    $tempFilePath = storage_path('app/public/qrcode.pdf');
+                    $pdf->save($tempFilePath);
+                    $qrpdf = file_get_contents($tempFilePath);
+                    $text1 = "🔍Qrcode Pembelian.  \n ";
+
+                    Http::attach(
+                        'file',
+                        $qrpdf,
+                        'QrCode Smartwax Palembang.pdf'
+                    )->post(env('WA_URL') . "kirimfile", [
+                        "idclient" => intval(env('WA_IDCLIENT')),
+                        "number" => $tjual->wa,
+                        "pesan" => $text1,
+        
+                    ]);
+                }
+            }
+           $data = Http::attach(
+                'file',
+                $notapdf,
+                'Nota Smartwax Palembang.pdf'
+            )->post(env('WA_URL') . "kirimfile", [
+                "idclient" => intval(env('WA_IDCLIENT')),
+                "number" => $tjual->wa,
+                "pesan" => $text,
+            ]);
            
             
 
-        //     // $sendnotif = [
-        //     //     'title' => 'Pembelian  Berhasil!',
-        //     //     'subject' => 'Steam App',
-        //     //     'url' => '',
-        //     //     'body' => 'Haloo Bapak/ibu , Silahkan download data Tiket Cuci Anda  dibawah: ',
-        //     // ];
-        //     // Mail::to(strtolower($tjual->email))->send(new sendMail($sendnotif, $tempFilePath, $tempFilePathnota));
+            // $sendnotif = [
+            //     'title' => 'Pembelian  Berhasil!',
+            //     'subject' => 'Steam App',
+            //     'url' => '',
+            //     'body' => 'Haloo Bapak/ibu , Silahkan download data Tiket Cuci Anda  dibawah: ',
+            // ];
+            // Mail::to(strtolower($tjual->email))->send(new sendMail($sendnotif, $tempFilePath, $tempFilePathnota));
 
-        //     unlink($tempFilePath);
-        //     unlink($tempFilePathnota);
-        //     // return $pdf->stream('download.pdf');
-        // }
+            unlink($tempFilePath);
+            unlink($tempFilePathnota);
+            // return $pdf->stream('download.pdf');
+        }
     }
 
     public function find($id)
@@ -661,8 +703,14 @@ class pembelianCon extends Controller
                 $url = 'http://vittindo.my.id/steamapp/kirim/'.$notif;
             }
             $data = Http::get($url);
+            return true;
         } catch (\Throwable $th) {
         }
+        return false;
+
+
+    }
+    public function set(){
 
     }
 }
