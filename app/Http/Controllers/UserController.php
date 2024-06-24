@@ -43,6 +43,9 @@ class UserController extends Controller
 
         if (Auth::attempt($kredensial)) {
             $request->session()->regenerate();
+            if(auth()->user()->role == 'Patner'){
+                return redirect()->intended('/patnerorder');
+            }
             return redirect()->intended('/transaksi');
         }
 
@@ -209,8 +212,14 @@ class UserController extends Controller
             $transaksi->whereBetween('tgl', [date("Y-m-d"), date("Y-m-d")]);
         }
         if (auth()->user()->role != "Admin") {
-            $transaksi->where('input_by', auth()->user()->id);
+            if(auth()->user()->role != "Patner"){
+                $transaksi->where('input_by', auth()->user()->id);
+
+            }else{
+                $transaksi->where('patner_id', auth()->user()->id);
+            }
         }
+        
         $cut = $transaksi;
         $transaksi = $transaksi->where("status", "berhasil")->orderby('created_at', 'desc')->paginate(20, ['*'], null, $page);
         // return $transaksi;
@@ -466,7 +475,7 @@ class UserController extends Controller
                 $transaksi->whereBetween('tgl', [$first, $end]);
             }
         }
-        $transaksi = $transaksi->where("status", "pending")->orderby('created_at', 'desc')->paginate(20, ['*'], null, $page);
+        $transaksi = $transaksi->where(["status"=> "pending", "patner_id" => null])->orderby('created_at', 'desc')->paginate(20, ['*'], null, $page);
         $pending = true;
         $pagination = tools::ApiPagination($transaksi->lastPage(), $page, 'pagetorder');
         return view("transaksi.tabletorder", compact("transaksi", "pagination", "pending"))->render();

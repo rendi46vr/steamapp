@@ -113,7 +113,9 @@
         <div class="img">
             <img class="center" src="data:image/png;base64,' . {{ base64_encode(QrCode::size(150)->generate($tiket->id)); }} . '" />
         </div>
-
+        @if(isset($patner))
+        <p class="c" style="margin-bottom: 0px;">{{$patner->nama_patner}}</p>
+        @endif
         <p class="c" style="margin-bottom: 0px;">{{$tjual->np}}</p>
         <p class="c" style="margin-bottom: 0px; font-size:10px;">{{$tjual->created_at}}</p>
 
@@ -122,7 +124,7 @@
         <p class="c" style="font-weight: 600; margin-top: 1px;"> (Terpakai)</p>
         @endif
         <div class="footer">
-        Terima Kasih Pelanggan Setia SmartWax Indonesia kami senantiasa menantikan kehadiran anda kembali
+        Terima Kasih Pelanggan Setia SMARTWAX PALEMBANG. Kami Senantiasa Melayani & Menantikan Kehadiran Anda Kembali
         </div>
     </div>
     @endforeach

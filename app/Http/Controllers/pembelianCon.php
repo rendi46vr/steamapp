@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use App\Http\Controllers\PlatGratisController;
 use App\Models\logwa;
+use App\Models\Patner;
 use App\Models\PlatGratis;
 use App\Models\TjualPaket;
 use Illuminate\Support\Facades\DB;
@@ -49,16 +50,23 @@ class pembelianCon extends Controller
     {
         Session::forget('cqty');
         Session::forget('paket_id');
-        $payment = payget::where("status", 1)->get();
+        $data = [];
+        $data['slug']= $slug;
+        $data['payment'] = payget::where("status", 1)->get();
 
         try {
-            $layanan = $this->tableorder($slug);
+            $data['layanan']= $this->tableorder($slug);
             Session(["order" => $slug]);
-            $tambahan = layanan::get();
-            $jasa = layanan::where("slug", $slug)->first();
-            $lb = layanantambahan::where("isaktif", 1)->get();
+            $data['tambahan'] = layanan::get();
+            $data['jasa'] = layanan::where("slug", $slug)->first();
+            $data['lb'] = layanantambahan::where("isaktif", 1)->get();
+            if(auth()->user()){
+                if(auth()->user()->role == "Patner"){
+                    $data['patner'] = Patner::find(auth()->user()->patner_id);
+                }
+            }
             // dd($jasa);
-            return view('order.form-order', compact("tambahan", "layanan", 'jasa', "slug", "payment", "lb"));
+            return view('order.form-order', $data);
         } catch (\Throwable $th) {
             return redirect("/");
         }
@@ -155,11 +163,18 @@ class pembelianCon extends Controller
         } elseif ($waktu->isBetween('14:31', '23:59')) {
             $sip = '1';
         }
+        $patner = false;
+        $patnerId = null;
         if (auth()->user()) {
             if (auth()->user()->sip == "3") {
                 if ($waktu->isBetween('11:00', '20:00')) {
                     $sip = '3';
                 }
+            }
+            //kondisi patner true maka sistem pembayran ke hutang
+            if(auth()->user()->role == "Patner"){
+                $patner = true;
+                $patnerId= auth()->user()->patner_id;
             }
         }
 
@@ -228,7 +243,7 @@ class pembelianCon extends Controller
             
             $order = tjual::create([
                 "id" => Str::uuid(),
-                "metpem" => $metode->channel_code,
+                "metpem" => $patner ? "hutang": $metode->channel_code,
                 "name" => null,
                 "np" => $noref,
                 "wa" => $validasiData["wa"],
@@ -250,7 +265,8 @@ class pembelianCon extends Controller
                 "user_id" => $userid,
                 "sip" => $sip,
                 'start_at' =>  $start_at,
-                'end_at' =>$end_at
+                'end_at' =>$end_at,
+                "patner_id" => $patnerId
             ]);
             $sts = 0;
             for ($i = 1; $i <= $main->qtyoption; $i++) {
@@ -259,6 +275,9 @@ class pembelianCon extends Controller
                 }
                 if($main->type == 1){
                     $i == 1 ? $sts = 0 :'';
+                }
+                if($patner){
+                    $sts = 0;
                 }
                 if($gratis){
                     $ttharga=0;
@@ -305,6 +324,11 @@ class pembelianCon extends Controller
                 $order->input_by = auth()->user()->id;
                 $order->save();
             }
+            if($patner){
+                $dataPatner = Patner::find(auth()->user()->patner_id);
+                $this->Qr($order->id, false);
+            }
+
             return response()->json([
                 "success" => true,
                 "data" => url("payment/" . $order->id)
@@ -530,6 +554,64 @@ class pembelianCon extends Controller
             'message' => $msg
         ]);
     }
+    public function downloadQr($slug){
+        return $this->Qr($slug, true);
+    }
+
+    public function Qr($slug, $download = false){
+        if(!$download){
+            try {
+                //code...
+                $data = Http::get('http://vittindo.my.id/steamapp/Qr/'.$slug);
+            } catch (\Throwable $th) {
+                //throw $th;
+            }
+            return true;
+        }
+        $tjual = tjual::findOrFail($slug);
+        $tikets = tjual1::where("tjual_id", $slug)->get();
+        $cek = tjual::where(['id'=>$slug, 'type_layanan'=> 1])->first();
+        if($cek){
+            $tikets = tjual1::where("tjual_id", $slug)->orderBy('created_at','asc')->limit(1)->get();
+        }
+        $addon = tjual2::where("tjual_id", $tjual->id)->get();        
+        $tjual1 = $tikets;
+        $patner = Patner::find(auth()->user()->patner_id);
+        $pdf = PDF::loadView('download2', compact('tjual', 'tikets','patner'));
+        $pdf->setPaper(array(0, 0, 250, 400));
+        $tempFilePath = storage_path('app/public/qrcode.pdf');
+        if($download){
+            return $pdf->download('QrCode Smartwax Palembang.pdf');
+        }
+        $pdf->save($tempFilePath);
+        $qrpdf = file_get_contents($tempFilePath);
+        $text1 = "🎟️ QR/Tiket Reservasi Smartwax 🚗\n\n Tiket ini dapat digunakan dalam 24 jam kedepan.\n Silakan serahkan tiket ini kepada kasir Smartwax untuk menikmati layanan pencucian mobil Anda.\n\n Terima kasih!\n SMARTWAX PALEMBANG";
+
+
+        Http::attach(
+            'file',
+            $qrpdf,
+            'QrCode Smartwax Palembang.pdf'
+        )->post(env('WA_URL') . "kirimfile", [
+            "idclient" => intval(env('WA_IDCLIENT')),
+            "number" => $tjual->wa,
+            "pesan" => $text1,
+
+        ]);
+    }
+    public function sendNotifPartnership($slug){
+
+        // $tjual = tjual::findOrFail($slug);
+        // $text1 = "🎟️ QR/Tiket Reservasi Smartwax dengan \n No. Referensi : *".$tjual->np."*, \n No. Kendaraan : *".$tjual->plat."* \n Sudah Terpakai!.\n\n Terima kasih!\n *SMARTWAX PALEMBANG*";
+        // $data = Http::post(env('WA_URL') . "kirimpesan", [
+        //     "idclient" => intval(env('WA_IDCLIENT')),
+        //     "number" => $tjual->wa,
+        //     "pesan" => $text1,
+
+        // ]);
+       return $data = Http::get('http://vittindo.my.id/steamapp/sendNotifPartnership/'.$slug);
+
+    }
 
     public function tiketpdf($slug, $true=true)
     {
@@ -602,11 +684,11 @@ class pembelianCon extends Controller
                     ]);
                 }
             }
-           $data = Http::attach(
-                'file',
-                $notapdf,
-                'Nota Smartwax Palembang.pdf'
-            )->post(env('WA_URL') . "kirimfile", [
+            $data = Http::attach(
+                    'file',
+                    $notapdf,
+                    'Nota Smartwax Palembang.pdf'
+                )->post(env('WA_URL') . "kirimfile", [
                 "idclient" => intval(env('WA_IDCLIENT')),
                 "number" => $tjual->wa,
                 "pesan" => $text,

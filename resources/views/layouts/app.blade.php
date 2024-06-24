@@ -105,55 +105,97 @@
                     <a class="nav-link text-dark" href="{{url('/')}}">Home</a>
                 </li>
                 @if(auth()->user())
-
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle " style="color: #000;" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Master
-                    </a>
-                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <a class="dropdown-item" href="{{url('layanan')}}">Layanan Utama</a>
-                        <a class="dropdown-item" href="{{url('layanantambahan')}}">Layanan Tambahan</a>
-                        <a class="dropdown-item" href="{{url('platgratis')}}">Daftar PLAT Gratis</a>
-                    </div>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle text-dark" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Tampil
-                    </a>
-                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <a class="dropdown-item" href="{{url('torder')}}">Tampil Order</a>
-                        <a class="dropdown-item" href="{{url('transaksi')}}">Tampil Transaksi</a>
-                        <a class="dropdown-item" href="{{url('tgagal')}}">Transaski Gagal</a>
-                    </div>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle text-dark" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Laporan
-                    </a>
-                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                    @if(auth()->user()->role == "Admin")
-                        <a class="dropdown-item" href="{{url('/laporan')}}">Laporan Total</a>
+                    @if(auth()->user()->role != "Patner")
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle " style="color: #000;" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Master
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                <a class="dropdown-item" href="{{url('layanan')}}">Layanan Utama</a>
+                                <a class="dropdown-item" href="{{url('layanantambahan')}}">Layanan Tambahan</a>
+                                <a class="dropdown-item" href="{{url('platgratis')}}">Daftar PLAT Gratis</a>
+                            </div>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-dark" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Tampil
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                <a class="dropdown-item" href="{{url('torder')}}">Tampil Order</a>
+                                <a class="dropdown-item" href="{{url('transaksi')}}">Tampil Transaksi</a>
+                                <a class="dropdown-item" href="{{url('tgagal')}}">Transaski Gagal</a>
+                            </div>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-dark" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Laporan
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            @if(auth()->user()->role == "Admin")
+                                <a class="dropdown-item" href="{{url('/laporan')}}">Laporan Total</a>
+                            @endif
+                                <a class="dropdown-item" href="{{url('laporan/plat')}}">Laporan per Kendaraan</a>
+                            </div>
+                        </li>
+                         <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-dark" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                               Partnership
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                <a class="dropdown-item" href="{{url('patner')}}">Data Partnership</a>
+                                <a class="dropdown-item" href="{{url('pembayaran/request')}}"> Request Pembayaran Partner</a>
+                                <a class="dropdown-item" href="{{url('pembayaran')}}">Pembayaran Partnership</a>
+                            </div>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-dark" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Setting
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                <a class="dropdown-item" href="{{url('dashboard')}}">Pengguna</a>
+                                <a class="dropdown-item" href="{{url('seeting/wa')}}">Koneksi Whatsapp</a>
+                            </div>
+                        </li>
+                        
+                    @else
+                    <!-- patner menu -->
+                       <li class="nav-item">
+                            <a class="nav-link text-dark" href="{{url('patnerorder')}}">Order</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-dark" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Pembayaran & Hutang
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                <a class="dropdown-item" href="{{url('pembayaran/request')}}">Request Pembayaran</a>
+                                <a class="dropdown-item" href="{{url('pembayaran')}}">Riwayat Pembayaran Berhasil</a>
+                                <a class="dropdown-item" href="{{url('rinciantransaksi')}}">Rincian Transaksi & hutang</a>
+                            </div>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-dark" href="#" id="navbarDropdown2" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Tampil
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="navbarDropdown2">
+                                <a class="dropdown-item" href="{{url('patnertransaksi')}}">Tampil Transaksi</a>
+                            </div>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-dark" href="#" id="navbarDropdown3" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Setting
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="navbarDropdown3">
+                                <a class="dropdown-item" href="{{url('mydashboard')}}">Profile & Password</a>
+                            </div>
+                        </li>
                     @endif
-                        <a class="dropdown-item" href="{{url('laporan/plat')}}">Laporan per Kendaraan</a>
-                    </div>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle text-dark" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Setting
-                    </a>
-                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <a class="dropdown-item" href="{{url('dashboard')}}">Pengguna</a>
-                        <a class="dropdown-item" href="{{url('seeting/wa')}}">Koneksi Whatsapp</a>
-                    </div>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{url('logout')}}">Logout <i class="fa fa-sign-out" aria-hidden="true"></i></a>
-                </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" href="{{url('logout')}}">Logout <i class="fa fa-sign-out" aria-hidden="true"></i></a>
+                    </li>
                 @else
-
-                <li class="nav-item">
-                    <a class="nav-link btn btn-primary text-light" href="{{url('/login')}}">Login</a>
-                </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-primary text-light" href="{{url('/login')}}">Login</a>
+                    </li>
                 @endif
             </ul>
         </div>

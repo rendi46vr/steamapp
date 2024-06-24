@@ -60,7 +60,13 @@ class tjual extends Model
                 return '0 Hari' ;
             }
         }else{
-            return $this->qty - $this->qtyterpakai . 'x Kali';
+            return $this->qty - $this->qtyterpakai . 'x Cuci';
         }
+    }
+    public function quota(){
+        if($this->type_layanan == 1){
+            return $this->durasi. " Hari";
+        }
+        return $this->qty. "x Cuci";
     }
 }

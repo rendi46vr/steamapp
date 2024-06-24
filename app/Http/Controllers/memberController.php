@@ -11,6 +11,7 @@ use Illuminate\Support\Str;
 use App\Models\tjual1;
 use App\Models\layanan;
 use App\Http\Controllers\pembelianCon;
+use App\Models\Patner;
 use App\Tools\tools;
 use Carbon\Carbon;
 
@@ -51,14 +52,14 @@ class memberController extends Controller
 
     public function memberorder($id, pembelianCon $pc)
     {
-        // try {
+        try {
             $tjual1 = tjual1::where('id', $id)->where("status", 0)->firstorFail();
             $isSubscribe = false;
             $cek = tjual::where(['id'=>$tjual1->tjual_id, 'type_layanan'=> 1])->first();
             if($cek){
                 $isSubscribe = true;
             }
-            // try {
+            try {
                 $tjual = tjual::where("id", $tjual1->tjual_id)->where("isaktif", 1)->firstOrFail();
                 $main = layanan::find($tjual->layanan_id);
                 if($isSubscribe){
@@ -76,6 +77,9 @@ class memberController extends Controller
                         ]);
                     }
                     $tjual->qtyterpakai =  $tjual->qtyterpakai +1;
+                    if($tjual->patner_id != null){
+                        $tjual->status= "berhasil";
+                    }
                     $tjual->save();
                     $msg = "Paket " . $main->layanan . " Berhasil digunakan";
                 }else{
@@ -89,31 +93,39 @@ class memberController extends Controller
                     $tjual1->save();
                     $msg = "Tiket/Qrcode " . $main->layanan . " Berhasil digunakan";
                 }
-
+                //jika tiket dari partnership
+                if($tjual->patner_id != null){
+                    $tjual->status = "berhasil";
+                    $tjual->save();
+                    $patner= Patner::find($tjual->patner_id);
+                    $patner->hutang = $patner->hutang + $tjual->totalbayar;
+                    $patner->save();
+                    $pc->sendNotifPartnership($tjual->id, false);
+                }
                 return response()->json([
                     "success" => true,
                     "msg" => $msg,
                     "data" => $pc->cetaknota($tjual->id),
                     'data_id'=>$tjual->id
                 ]);
-            // } catch (\Throwable $th) {
+            } catch (\Throwable $th) {
                 $tjual = tjual::with("layanan")->where("tjual_id", $tjual1->tjual_id)->latest()->first();
                 Session::put("user", ["uid" => "", "plat" => $tjual->plat, "email" => $tjual->email, "wa" => $tjual->wa, "latest" => $tjual->layanan->slug]);
                 return response()->json([
                     "success" => false,
                     "lanjut" => true,
-                    "msg" => "Saldo Cuci Habis <br>Mau Beli Paket " . $tjual->layanan->layanan . " (" . tools::fRupiah($tjual->layanan->harga) . ") Lagi?",
+                    "msg" => "Quota Cuci Habis <br>Mau Beli Paket " . $tjual->layanan->layanan . " (" . tools::fRupiah($tjual->layanan->harga) . ") Lagi?",
                     "id" => ""
                 ]);
-            // }
+            }
             return $tjual;
-        // } catch (\Throwable $th) {
+        } catch (\Throwable $th) {
             return response()->json([
                 "success" => false,
                 "lanjut" => false,
                 "msg" => "Qr Code Tidak Valid",
             ]);
-        // }
+        }
     }
     public function belilagi($id)
     {

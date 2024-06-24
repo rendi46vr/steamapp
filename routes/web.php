@@ -8,15 +8,19 @@ use App\Http\Controllers\UserController;
 use App\Models\tgltiket;
 use Illuminate\Http\Request;
 use App\Http\Controllers\DiskonController;
+use App\Http\Controllers\hutangController;
 use App\Http\Controllers\ipaymuController;
 use App\Http\Controllers\langgananController;
+use App\Http\Controllers\layananPaketController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\layananController;
-use App\Http\Controllers\layananPaketController;
 use App\Http\Controllers\memberController;
 use App\Http\Controllers\layanantambahanController;
+use App\Http\Controllers\PatnerController;
+use App\Http\Controllers\PatnerPageCotroller;
 use App\Http\Controllers\userCon;
 use App\Http\Controllers\PlatGratisController;
+use Illuminate\Support\Facades\Http;
 
 /*
 |--------------------------------------------------------------------------
@@ -68,10 +72,8 @@ Route::get('cetaknota/{slug}', [pembelianCon::class, 'cetaknota']);
 Route::post('find/{id}', [pembelianCon::class, 'find']);
 
 Route::group(['middleware' => ['auth']], function () {
-    Route::group(['middleware' => ['cek_login']], function () {
-        Route::get('dashboard', [userCon::class, "index"]);
+    Route::group(['middleware' => ['cek_login:Admin,Staff']], function () {
         Route::get('seeting/wa', [userCon::class, "settingwa"]);
-
         //adduser
         Route::post('adduser', [userCon::class, "adduser"]);
         Route::post('cpass', [userCon::class, "cpass"]);
@@ -82,7 +84,6 @@ Route::group(['middleware' => ['auth']], function () {
         Route::post('pagetransaksi/{page}', [UserController::class, "pagetransaksi"]);
         Route::post('searchtransaksi/{serach}', [UserController::class, "searchtransaksi"]);
         Route::post('confirm/{id}', [UserController::class, "confirm"]);
-        Route::post('detail/{id}', [UserController::class, "detail"]);
         Route::post('confirmlsg/{id}', [UserController::class, "confirmlsg"]);
         Route::post('admincek/{slug}', [UserController::class, "admincekproses"]);
 
@@ -115,6 +116,13 @@ Route::group(['middleware' => ['auth']], function () {
             Route::post('delpaket/{id}', [layananPaketController::class, "delpaket"]);
             Route::post('editpaket', [layananPaketController::class, "editpaket"]);
             Route::post('lstatus/{id}', [layananPaketController::class, "lstatus"]);
+        }); 
+        Route::group(['prefix' => 'patner'], function () {
+            Route::get('/', [PatnerController::class, 'index'])->name('index');
+            Route::post('addpatner', [PatnerController::class, "addpatner"]);
+            Route::post('delpatner/{id}', [PatnerController::class, "delpatner"]);
+            Route::post('editpatner', [PatnerController::class, "editpatner"]);
+            Route::post('lstatus/{id}', [PatnerController::class, "lstatus"]);
         }); 
 
 
@@ -149,6 +157,42 @@ Route::group(['middleware' => ['auth']], function () {
         Route::post('laporan/{search?}', [LaporanController::class,'filterindex']);
 
     });
+
+    Route::group(['middleware' => ['cek_login:Patner']], function () {
+        Route::get('mydashboard', [PatnerPageCotroller::class, "index"]);
+
+        //patner order
+         //Tampil Oder
+        Route::get('patnerorder', [PatnerPageCotroller::class, "torder"]);
+        Route::post('pagepatnerorder/{page}', [PatnerPageCotroller::class, "pagetorder"]);
+        Route::post('searchpatnerorder/{serach}', [PatnerPageCotroller::class, "searchtorder"]);
+        
+        //tampil transaksi patner
+
+    });
+    Route::group(['middleware' => ['cek_login:Patner,Admin']], function () {
+        Route::get('dashboard', [userCon::class, "index"]);
+        Route::post('detail/{id}', [UserController::class, "detail"]);
+        Route::get('download-tiket/{slug}', [pembelianCon::class, "downloadQr"]);
+
+        Route::get('patnertransaksi', [PatnerPageCotroller::class, "transaksi"]);
+        Route::post('pagepatnertransaksi/{page}', [PatnerPageCotroller::class, "pagetransaksi"]);
+        Route::post('searchpatnertransaksi/{serach}', [PatnerPageCotroller::class, "searchtransaksi"]);
+        //
+        Route::group(['prefix' => 'pembayaran'], function () {
+            Route::get('/', [hutangController::class, 'index'])->name('index');
+            Route::get('request', [hutangController::class, "request"]);
+            Route::post('batal/{id}', [hutangController::class, "batal"]);
+            Route::post('setuju/{id}', [hutangController::class, "setuju"]);
+            Route::post('request', [hutangController::class, "requestbayar"]);
+        }); 
+        Route::post('pagepembayaran/{page}', [hutangController::class, "pagepembayaran"]);
+        Route::post('searchpembayaran/{serach}', [hutangController::class, "searchpembayaran"]);
+        Route::get('rinciantransaksi/{patner?}', [hutangController::class, "rinciantransaksi"]);
+        
+       
+    });
+
 });
 Route::get('tiket/{id}', [pembelianCon::class, "tiket"]);
 Route::get('langganan/{slug}', [langgananController::class, 'langganan']);
@@ -164,5 +208,13 @@ Route::get('print', function () {
 });
 Route::get('nota/{slug}', [pembelianCon::class, "cetaknota"]);
 Route::get('teskirim/{slug}', [pembelianCon::class, "kirirmnota"]);
+Route::post('kirimnota/{slug}', [pembelianCon::class, "kirimnota"]);
+Route::get('sendmsg', [pembelianCon::class, "sendNotifPartnership"]);
 
-Route::get('test', [pembelianCon::class, "kirirmnota"]);
+Route::get('test', function(){
+//    $data = Http::get('http://vittindo.my.id/steamapp/kirimwa/d2a76b27-e44f-4cff-8799-cc1fbed809b9');
+//    return $data;
+    $notif = new pembelianCon();
+    // dd(public_path('whatsapp.svg'));
+    return $notif->sendNotifPartnership('d3d550a2-6499-496c-bea7-3a7ee75a7899')->body();
+});

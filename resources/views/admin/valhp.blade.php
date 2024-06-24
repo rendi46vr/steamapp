@@ -13,19 +13,22 @@ function rupiah($angka)
     return $hasil_rupiah;
 } ?>
 <!-- <h1 class="f">Jenis Layanan</h1> -->
+@if(auth()->user())
+    @if(auth()->user()->role != "Patner")
+    <div class="scan-member">
+        <a href="/" class="btn btn-orange ">Tutup <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
+        <div class="ag-center">
+            <div class="smw-card scan-area " style="display: block;">
+                <div class=" row">
+                    <div id="reader" style="width: 100%; height: auto; position: relative; padding: 0px; border: 1px solid silver;">
 
-<div class="scan-member">
-    <a href="/" class="btn btn-orange ">Tutup <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
-    <div class="ag-center">
-        <div class="smw-card scan-area " style="display: block;">
-            <div class=" row">
-                <div id="reader" style="width: 100%; height: auto; position: relative; padding: 0px; border: 1px solid silver;">
-
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+    @endif
+@endif
 <div class="jtiket">
 
     <div class="row lg-100">
@@ -141,7 +144,6 @@ function rupiah($angka)
             //                 }
             //             })
             //         } else {
-
             //         }
 
             //     }
@@ -154,7 +156,6 @@ function rupiah($angka)
 
     $(document).ready(function() {
         $(".html5-qrcode-element").addClass("btn btn-orange");
-        console.log("ok");
         let = data = "yummy", count = 0;
 
         function onScanSuccess(decodedText, decodedResult) {

@@ -75,12 +75,85 @@ $(document).on('click', "button[type=submit]:not([disabled])", function(e) {
     name_class = 'App/Http/Requests/' + action;
     my_form = form
     // c(form.hasClass('another'))
-    if($(this).hasClass("resetFalse")){
-        validate(action, refreshData, false)
+    if (!$(this).hasClass("withfile")) {
+        if($(this).hasClass("resetFalse")){
+            validate(action, refreshData, false)
+        }else{
+            form.hasClass('another') ? validate(action, another) : validate(action, refreshData);
+        }
     }else{
-        form.hasClass('another') ? validate(action, another) : validate(action, refreshData);
+        // 
+        $(this).attr('disabled', 'disabled');
+        sendFormData(action, new FormData(form[0]));
+        
     }
 });
+
+function sendFormData(url, formData) {
+    $.ajax({
+        url: baseUri(url), // Ensure baseUri function returns the correct URL
+        type: 'post',
+        data: formData,
+        processData: false, // Prevent jQuery from processing the data
+        contentType: false, // Prevent jQuery from setting content type
+        dataType: 'json',
+        beforeSend: function() {
+            let loading = my_form.find('.loading');
+            const textDefaultButton = loading.html();
+            loading.html("<span class='spinner-border spinner-border-sm' role='status'></span> Processing... ");
+            loading.closest('.withfile').attr('disabled', 'disabled');
+            
+        },
+        success: function(response) {
+            if (response.success) {
+                // Handle successful form submission
+                const mymo = $('#' + my_form.closest('.modal').attr('id'));
+                mymo.modal('hide');
+                my_form[0].reset();
+                my_form.find('.help-block').html('');
+                window.location.reload();
+                // Perform additional actions if necessary
+            } else {
+                var campos_error = [];
+                $.each(response.errors, function(key, error) {
+                    let campo = my_form.find('.msg' + key);
+                    let father = campo.parents('.vr-form');
+                    let next = campo.next();
+                    father.removeClass('has-success').addClass('has-error');
+                    if (next.length > 0) {
+                        next.html(error[0]);
+                    } else {
+                        campo.after('<div class="help-block f12 text-danger with-errors"> ' + error[0] + ' </div>');
+                    }
+                    campos_error.push(key);
+                });
+
+                for (var pair of formData.entries()) {
+                    var fieldName = pair[0];
+                    if ($.inArray(fieldName, campos_error) === -1) {
+                        let father = my_form.find('.msg' + fieldName).parent('.vr-form');
+                        father.removeClass('has-error').addClass('has-success');
+                        father.find('.help-block').html('');
+                    }
+                }
+            }
+            let loading = my_form.find('.loading');
+            const textDefaultButton = loading.html();
+            loading.html(textDefaultButton);
+            loading.closest('.withfile').removeAttr('disabled');
+            $('.withfile').removeAttr('disabled')
+        },
+        error: function(xhr) {
+            // Handle error
+            let loading = my_form.find('.loading');
+            const textDefaultButton = loading.html();
+            loading.html(textDefaultButton);
+            loading.closest('.withfile').removeAttr('disabled');
+            $('.withfile').removeAttr('disabled')
+
+        }
+    });
+}
 $(document).on('click', ".show-triger", function(e) {
   edit($(this).data('add'), '.show-data');
 });
@@ -146,6 +219,7 @@ function deldata(u) {
     })
 }
 
+
 function validate(a,r, b=true) {
     var data = my_form.serializeArray();
     var mydata = {}
@@ -153,7 +227,7 @@ function validate(a,r, b=true) {
     let loading = my_form.find('.loading');
     const textDefaultButton = loading.html(); 
     loading.html("<span class='spinner-border spinner-border-sm' role='status'></span> Processing... ")
-    loading.closest('button').attr('disabled','disabled');
+    loading.closest('.withfile').attr('disabled','disabled');
 
     data.push({
         name: 'class',
@@ -235,7 +309,7 @@ function validate(a,r, b=true) {
                 buton_submit = false;
             }
             loading.html(textDefaultButton)
-            loading.closest('button').removeAttr('disabled');
+            loading.closest('.withfile').removeAttr('disabled');
 
         },
         error: function(xhr) {

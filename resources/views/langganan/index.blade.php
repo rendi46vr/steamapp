@@ -10,7 +10,7 @@ function rupiah($angka, $true = true)
     }
     return $hasil_rupiah;
 }
-if ($pay->metpem == "tunai") {
+if ($pay->metpem == "tunai" || $pay->metpem == "hutang") {
     $total = $pay->totalbayar;
 } else {
     $total = $pay->payment->Total;
@@ -109,12 +109,12 @@ if ($pay->metpem == "tunai") {
                                     </li>
                                     @endforeach
                                     <li class="list-group-item">
-                                        <small>Durasi</small>
-                                        <span style="float: right;">{{$pay->durasi}}<sup> Hari </sup></span>
+                                        <small>Quota</small>
+                                        <span style="float: right;"><sup>{{$pay->quota()}} </sup></span>
                                     </li>
                                     <li class="list-group-item">
-                                        <small>Sisa Durasi</small>
-                                        <span style="float: right;">{{$pay->sisa_durasi}}<sup> Hari </sup></span>
+                                        <small>Sisa Quota</small>
+                                        <span style="float: right;"><sup>{{$pay->sisaSaldo()}} </sup></span>
                                     </li>
                                     <li id="cInsurance" class="list-group-item" style="display:none;">
                                         <span>Biaya Admin</span>

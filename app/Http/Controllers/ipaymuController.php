@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Patner;
 use App\Models\payget;
 use App\Models\pesanan;
 use App\Models\tjual;
@@ -115,10 +116,16 @@ class ipaymuController extends Controller
 
     public function payment($slug)
     {
-        $pay = tjual::with(["dataorder", "payget", "payment", "addon"])->findOrFail($slug);
 
-        $addon = tjual2::with("layanantambahan")->where("tjual_id", $slug)->get();
-        return view("payment.payment", compact("pay", "addon"));
+
+        $data=[];
+        $data['pay'] = tjual::with(["dataorder", "payget", "payment", "addon"])->findOrFail($slug);
+        $data['addon']  = tjual2::with("layanantambahan")->where("tjual_id", $slug)->get();
+        if($data['pay']->patner_id != null){
+            $data['patner'] = Patner::find($data['pay']->patner_id);
+        }
+
+        return view("payment.payment", $data);
     }
 
     public function callback(Request $request, pembelianCon $cetak)

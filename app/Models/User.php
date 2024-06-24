@@ -24,7 +24,8 @@ class User extends Authenticatable
         'password',
         "role",
         'sip',
-        "member_id"
+        "member_id",
+        "patner_id",
     ];
 
     /**
@@ -54,5 +55,8 @@ class User extends Authenticatable
     public function by()
     {
         return $this->hasMany(tjual::class, "input_by", "id");
+    }
+    public function patner(){
+        return $this->hasOne(Patner::class, 'id', 'patner_id');
     }
 }

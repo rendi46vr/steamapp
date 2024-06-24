@@ -37,10 +37,12 @@ use App\Tools\tools;
                             <input type="hidden" name="type" value='{{$jasa->type}}'>
                             <input type="text" name="plat" id="" class="form-control msgplat" value="{{session('user')['plat']}}" placeholder="No PLAT" id="noplat" aria-describedby="helpId">
                         </div>
+                        @if(!isset($patner))
                         <div style="align-self: flex-end;">
                                <button class="btn btn-info cekplat">Cek</button>
                             </div>
                         </div>
+                        @endif
                     </div>
                     <div class="form-group">
                         <label class="statuspaket"></label>
@@ -65,9 +67,11 @@ use App\Tools\tools;
                             <input type="text" name="plat" id="" class="form-control msgplat" placeholder="No PLAT..." id="noplat" aria-describedby="helpId">
                         </div>
                         <div class="form-group col-4 d-flex align-item-end ">
+                        @if(!isset($patner))
                         <div style="align-self: flex-end;">
                                <button class="btn btn-info cekplat">Cek</button>
                             </div>
+                        @endif
                         </div>
                     </div>
                         <div class="form-group">
@@ -80,7 +84,7 @@ use App\Tools\tools;
                         </div>
                         <div class="form-group vr-form">
                             <label for="">Nomor Whatsapp</label>
-                            <input type="number" name="wa" id="" class="form-control msgwa" placeholder="08............" id="#layanan_tambahan"" aria-describedby=" helpId">
+                            <input type="number" name="wa" id="" class="form-control msgwa" placeholder="08............" @if(isset($patner)) value="{{$patner->nowa}}" @endif id="#layanan_tambahan"" aria-describedby=" helpId">
                         </div>
                         <!-- <div class="form-group vr-form">
                             <label for="">Email</label>
@@ -150,6 +154,7 @@ use App\Tools\tools;
                 <div class="smw-card-body pt-2 table-order">
                     {!! $layanan !!}
                 </div>
+                @if(!isset($patner))
                 <div class="smw-card-header"> <i class="fa fa-credit-card i-orange" aria-hidden="true"></i>
                     Pilih Metode Pembayaran (Qris & Tunai)
                 </div>
@@ -170,13 +175,16 @@ use App\Tools\tools;
                     </div>
                     <div class="msgmetpem"></div>
                 </div>
+                    @else
+                        <input type="hidden" type="radio" name="metpem" value="tunai">
+                    @endif
                 <div class="form-group m-0 d-flex justify-content-start">
 
                     <a class="btn btn-orange buy" href="{{url('/')}}" type="submit"> <i class="fa fa-arrow-left" aria-hidden="true"></i> Kembali</a>
                 </div>
 
                 <div class="form-group mt-3 d-flex justify-content-end">
-                    <button class="btn btn-orange lanjut-order resetFalse loading" type="submit"> Lanjutkan Pembayaran <i class="fa fa-arrow-right" aria-hidden="true"></i></button>
+                    <button class="btn btn-orange lanjut-order resetFalse loading" type="submit">@if(!isset($patner)) Lanjutkan Pembayaran <i class="fa fa-arrow-right" aria-hidden="true"></i> @else <i class="fa fa-qrcode" ></i> Cetak Tiket @endif</button>
                 </div>
             </div>
             <div class="col-lg-6 col-md-6">
@@ -220,62 +228,62 @@ use App\Tools\tools;
     $(document).on("change", "#layanan_tambahan", function() {
         console.log("asldjldjlk")
     });
-
-    $(document).on("change", ".msgplat", function() {
-        const ini = $(this).val();
-        if (ini.length > 4) {
-            cekDataPlat(ini);
-        }
-    })
-    $(document).on("click", ".cekplat", function(e) {
-        e.preventDefault()
-        const button = $(this);
-        let msgplat = $('.msgplat')
-        let ini = $('.msgplat').val();
-        if (ini.length > 4) {
-            button.html("<span class='spinner-border spinner-border-sm' role='status'></span>Checking...")
-            cekDataPlat(ini);
-            msgplat.parent().find('help-block').text('')
-            checkedData()
-        }else{
-            if (msgplat.parent().find('.help-block').length === 0) {
-            var helpBlock = $('<div class="help-block  f12  text-danger with-errors"> Plat Harus diisi Minimal 4 Karakter </div>');
-            msgplat.parent().append(helpBlock);
-            } else {
-                msgplat.parent().find('help-block').text('Plat Harus diisi  Minimal 4 Karakter');
+    @if(!isset($patner))
+        $(document).on("change", ".msgplat", function() {
+            const ini = $(this).val();
+            if (ini.length > 4) {
+                cekDataPlat(ini);
             }
-        }
-
-
-    })
-    function cekDataPlat(ini){
-        const button = $('.cekplat')
-        doReq('find/' + ini, null, function(res) {
-            if (res.success) {
-                $('.msgwa').val(res.wa)
-                $('.msgemail').val(res.email)
-                const msg =$('.statuspaket'),lgn = $('.langganan');
-                let act =0;
-                if(res.paket){
-                    msg.html(res.message)
-                    if(res.expire){
-                        msg.removeClass('text-success').addClass('text-danger');
-                   }else{
-                        if(res.action){
-                            msg.removeClass('text-danger').addClass('text-success');act =1;
-                        }else{
-                            msg.removeClass('text-danger').addClass('text-primary');act =0;
-                        }
-                        lgn.show().attr('href',res.slug);
-                        $('#acttype').val(act);
-                    }
-                }else{
-                    lgn.hide()
+        })
+        $(document).on("click", ".cekplat", function(e) {
+            e.preventDefault()
+            const button = $(this);
+            let msgplat = $('.msgplat')
+            let ini = $('.msgplat').val();
+            if (ini.length > 4) {
+                button.html("<span class='spinner-border spinner-border-sm' role='status'></span>Checking...")
+                cekDataPlat(ini);
+                msgplat.parent().find('help-block').text('')
+                checkedData()
+            }else{
+                if (msgplat.parent().find('.help-block').length === 0) {
+                var helpBlock = $('<div class="help-block  f12  text-danger with-errors"> Plat Harus diisi Minimal 4 Karakter </div>');
+                msgplat.parent().append(helpBlock);
+                } else {
+                    msgplat.parent().find('help-block').text('Plat Harus diisi  Minimal 4 Karakter');
                 }
             }
-            button.html('Cek')
         })
-    }
+        function cekDataPlat(ini){
+            const button = $('.cekplat')
+            doReq('find/' + ini, null, function(res) {
+                if (res.success) {
+                    $('.msgwa').val(res.wa)
+                    $('.msgemail').val(res.email)
+                    const msg =$('.statuspaket'),lgn = $('.langganan');
+                    let act =0;
+                    if(res.paket){
+                        msg.html(res.message)
+                        if(res.expire){
+                            msg.removeClass('text-success').addClass('text-danger');
+                    }else{
+                            if(res.action){
+                                msg.removeClass('text-danger').addClass('text-success');act =1;
+                            }else{
+                                msg.removeClass('text-danger').addClass('text-primary');act =0;
+                            }
+                            lgn.show().attr('href',res.slug);
+                            $('#acttype').val(act);
+                        }
+                    }else{
+                        lgn.hide()
+                    }
+                }
+                button.html('Cek')
+            })
+        }
+    @endif
+
     window.addEventListener('popstate', function (event) {
         location.reload();
     });

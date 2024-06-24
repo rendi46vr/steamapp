@@ -10,7 +10,7 @@ function rupiah($angka, $true = true)
     }
     return $hasil_rupiah;
 }
-if ($pay->metpem == "tunai") {
+if ($pay->metpem == "tunai" || $pay->metpem == "hutang") {
     $total = $pay->totalbayar;
 } else {
     $total = $pay->payment->Total;
@@ -114,7 +114,7 @@ if ($pay->metpem == "tunai") {
                                     <li id="cFee" class="list-group-item text-muted" style="display:block;">
                                         <span id="fee-title">Biaya Layanan</span><br>
                                         <small id="fee-desc">Admin</small>
-                                        @if($pay->metpem == "tunai")
+                                        @if($pay->metpem == "tunai" || $pay->metpem == "hutang")
                                         <span style="float: right;" id="fee-val"><sup>Rp. </sup>0</span>
                                         @else
                                         <span style="float: right;" id="fee-val"><sup>Rp. </sup>{{ rupiah($pay->payment->Fee, false)}}</span>
@@ -141,73 +141,97 @@ if ($pay->metpem == "tunai") {
                         <div id="cBank" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
                             <div class="card-body text-center">
                                 <div class="text-center">
+                                    @if($pay->metpem == "tunai" || $pay->metpem == "hutang")
                                     @if($pay->metpem == "tunai")
                                     <label for="tunai" class="form-check-label btn-outline-info disabled rounded" style="font-size: 31px !important;"><b> <i class="fa fa-money" aria-hidden="true"></i> Tunai</b></label>
+                                    @else
+                                    <label for="hutang" class="form-check-label btn-outline-info disabled rounded" style="font-size: 31px !important;">  <b> <i class="fa fa-money" aria-hidden="true"></i> Hutang</b></label>
+                                    @endif
                                     @else
                                     <img src="{{url($pay->payget->logo)}}" style="max-width:120px; height:auto;" alt="iPaymu Payment Channel">
                                     @endif
                                     <hr>
                                 </div>
-                                <p>@if($pay->payget->code == "va") Mohon Transfer Pada Akun Va dibawah ini: @elseif($pay->payget->code == "cstore")Mohon Melakukan Pembayaran di {{$pay->payget->channel_description}} @elseif($pay->payget->code == "qris") Mohon Melakukan Pembayaran pada Qrcode berikut @else Mohon Lakukan Pembayaran @endif</p>
+                                <p>@if($pay->payget->code == "va") Mohon Transfer Pada Akun Va dibawah ini: @elseif($pay->payget->code == "cstore")Mohon Melakukan Pembayaran di {{$pay->payget->channel_description}} @elseif($pay->payget->code == "qris") Mohon Melakukan Pembayaran pada Qrcode berikut @elseif($pay->payget->code == "hutang")   @else Mohon Lakukan Pembayaran @endif</p>
                                 <h2>{{ $pay->payget->channel_description }} </h2>
                                 <h4 class="p-2 border-dashed mb-3 mt-3" style="max-width: 300px;  margin :auto;">
-                                    @if($pay->metpem == "tunai")
+                                    @if($pay->metpem == "tunai" || $pay->metpem == "hutang")
                                     <span id="textcopyva">{{$pay->np}}</span>
                                     <span class="ml-2 small text-muted" onclick="if (!window.__cfRLUnblockHandlers) return false; copyToClipboard('#textcopyva')" style="cursor:pointer;"><em class="fa fa-copy"></em></span>
                                     @else
-                                    @if($pay->metpem == "qris")
-                                    <?php $html = file_get_contents($pay->payment->QrImage); ?>
-                                    {!! $html !!}
+                                        @if($pay->metpem == "qris")
+                                        <?php $html = file_get_contents($pay->payment->QrImage); ?>
+                                        {!! $html !!}
+                                        @else
+                                        <span id="textcopyva">{{$pay->payment->PaymentNo}}</span>
+                                        <span class="ml-2 small text-muted" onclick="if (!window.__cfRLUnblockHandlers) return false; copyToClipboard('#textcopyva')" style="cursor:pointer;"><em class="fa fa-copy"></em></span>
+                                        @endif
+                                    @endif
+                                </h4>
+                                @if(!isset($patner))
+                                    <h2>Pembayaran {{$pay->name }}</h2>
+                                    <p class="mt-3 mb-1">jumlah</p>
+
+                                    <h4>
+                                        {{rupiah($total)}}
+                                        <span id="textcopy" style="display:none"> {{$total}}</span>
+                                        <span class="ml-2 small text-muted" onclick="if (!window.__cfRLUnblockHandlers) return false; copyToClipboard('#textcopy')" style="cursor:pointer;"><em class="fa fa-copy"></em></span>
+                                    </h4>
+                                    @if($pay->metpem == "tunai")
+                                        @if($pay->status === "pending")
+                                            <h2 id="expired_at">Pembayaran pending</h2>
+                                            <p class="mt-3 mb-1 info">Menunggu Konfirmasi Pembayaran</p>
+                                            @if(auth()->user())
+                                            <div class=" p-1  rounded confirm pointer bg-info text-white pointer" data-add="confirmlsg/{{$pay->id}}">Konfirmasi Pembayaran</div>
+                                            @endif
+                                        @elseif($pay->status == "berhasil")
+                                            <h2 id="expired_at">Pembayaran Berhasil<i class='fa fa-check-circle text-success' aria-hidden='true'></i></h2>
+                                        @endif
+
                                     @else
-                                    <span id="textcopyva">{{$pay->payment->PaymentNo}}</span>
-                                    <span class="ml-2 small text-muted" onclick="if (!window.__cfRLUnblockHandlers) return false; copyToClipboard('#textcopyva')" style="cursor:pointer;"><em class="fa fa-copy"></em></span>
-                                    @endif
-                                    @endif
-                                </h4>
-                                <h2>Pembayaran {{$pay->name }}</h2>
-                                <p class="mt-3 mb-1">jumlah</p>
+                                        <?php if ($pay->status == "pending") { ?>
+                                            <p class="mt-3 mb-1">Tegat Waktu Pembayaran</p>
+                                            <h2 id="expired_at"></h2>
 
-                                <h4>
-                                    {{rupiah($total)}}
-                                    <span id="textcopy" style="display:none"> {{$total}}</span>
-                                    <span class="ml-2 small text-muted" onclick="if (!window.__cfRLUnblockHandlers) return false; copyToClipboard('#textcopy')" style="cursor:pointer;"><em class="fa fa-copy"></em></span>
-                                </h4>
-                                @if($pay->metpem == "tunai")
-                                @if($pay->status === "pending")
-                                <h2 id="expired_at">Pembayaran pending</h2>
-                                <p class="mt-3 mb-1 info">Menunggu Konfirmasi Pembayaran</p>
-                                @if(auth()->user())
-                                <div class=" p-1  rounded confirm pointer bg-info text-white pointer" data-add="confirmlsg/{{$pay->id}}">Konfirmasi Pembayaran</div>
-                                @endif
-                                @elseif($pay->status == "berhasil")
-                                <h2 id="expired_at">Pembayaran Berhasil<i class='fa fa-check-circle text-success' aria-hidden='true'></i></h2>
-                                @endif
+                                        <?php } elseif ($pay->status == "expired") { ?>
+                                            <p class="mt-3 mb-1 info">Waktu Pembayaran Habis</p>
+                                            <h2 id="expired_at">Transaksi gagal</h2>
+                                        <?php } else { ?>
+                                            <p class="mt-3 mb-1 info">Status Transaksi</p>
+                                            <h2 id="expired_at">Pembayaran Berhasil <i class='fa fa-check-circle text-success' aria-hidden='true'></i></h2>
 
+                                        <?php } ?>
+                                    @endif
                                 @else
-                                <?php if ($pay->status == "pending") { ?>
-                                    <p class="mt-3 mb-1">Tegat Waktu Pembayaran</p>
-                                    <h2 id="expired_at"></h2>
-
-                                <?php } elseif ($pay->status == "expired") { ?>
-                                    <p class="mt-3 mb-1 info">Waktu Pembayaran Habis</p>
-                                    <h2 id="expired_at">Transaksi gagal</h2>
-                                <?php } else { ?>
-                                    <p class="mt-3 mb-1 info">Status Transaksi</p>
-                                    <h2 id="expired_at">Pembayaran Berhasil <i class='fa fa-check-circle text-success' aria-hidden='true'></i></h2>
-
-                                <?php } ?>
+                                    <h2>{{$patner->nama_patner}}</h2>
+                                    <p class="mt-3 mb-1">{{$pay->plat}}</p>
                                 @endif
+
+                               
+                                
                                 <p class="mt-3 mb-1">Nomor Ref</p>
                                 <h2>{{$pay->np}}</h2>
+                                @if(!isset($patner))
                                 <div class="alert alert-info mt-3 text-justify" role="alert" style="font-size:12px">
                                     Note : Mohon Melakukan Pembayaran Segera sebelum waktu habis </div>
                                 <div class="mt-4">
-                                    @if($pay->metpem != "tunai")
+                                    @if($pay->metpem != "tunai" || $pay->metpem != "hutang")
                                     <a class="btn btn-primary btn-block" href="{{$pay->payget->payment_instructions_doc}}" target="_blank" rel="noopener">Cara Bayar</a>
                                     @endif
                                     <a href="{{url('/form-order/'.$pay->layanan->slug)}}" class="btn btn-secondary btn-block text-white mt-2">
                                         Order Lagi </a>
                                 </div>
+                                @else
+                                <div class="alert alert-info mt-3 text-justify" role="alert" style="font-size:12px">
+                                    Tiket Dikirim ke no whatsapp {{$patner->nowa}}, jika tidak terkirim anda dapat mengunduh manual dibawah ini </div>
+                                <div class="mt-4">
+                                    @if($pay->metpem != "tunai" || $pay->metpem != "hutang")
+                                    <a class="btn btn-primary btn-block" href="{{url('download-tiket/'.$pay->id)}}" target="_blank" rel="noopener">Download Tiket</a>
+                                    @endif
+                                    <a href="{{url('/form-order/'.$pay->layanan->slug)}}" class="btn btn-secondary btn-block text-white mt-2">
+                                        Order Lagi </a>
+                                </div>
+                                @endif
                             </div>
                         </div>
                     </div>

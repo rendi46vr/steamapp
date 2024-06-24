@@ -16,7 +16,7 @@ class CreateTjualsTable extends Migration
         Schema::create('tjuals', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('name');
-            $table->string('NP')->unique();
+            $table->string('np')->unique();
             $table->string('wa')->nullable();
             $table->string('email')->nullable();
             $table->date('tgl')->nullable();

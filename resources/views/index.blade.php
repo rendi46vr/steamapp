@@ -13,16 +13,19 @@ function rupiah($angka)
     return $hasil_rupiah;
 } ?>
 <!-- <h1 class="f">Jenis Layanan</h1> -->
-
-<div class="scan-member">
-    <a href="{{url('valhp')}}" class="btn btn-orange ">Via Scan Qr <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
-    <div class="ag-center">
-        <div class="smw-card scan-area " style="display: none;">
-            <div class=" row">
+@if(auth()->user())
+    @if(auth()->user()->role != "Patner")
+    <div class="scan-member">
+        <a href="{{url('valhp')}}" class="btn btn-orange ">Via Scan Qr <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
+        <div class="ag-center">
+            <div class="smw-card scan-area " style="display: none;">
+                <div class=" row">
+                </div>
             </div>
         </div>
     </div>
-</div>
+    @endif
+@endif
 <div class="jtiket">
 
     <div class="row lg-100">
