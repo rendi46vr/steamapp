@@ -26,7 +26,7 @@ class Patner extends Model
     public function hutang(){
         return tools::rupiah($this->hutang);
     }
-    
+
     public function bayar(){
         return $this->hasMany(Bayar::class, 'patner_id', 'id');
     }
@@ -34,6 +34,10 @@ class Patner extends Model
     //relasi ke tjual
     public function tjual(){
         return $this->hasMany(tjual::class, 'patner_id', 'id');
+    }
+
+    public function layanan(){
+        return $this->hasMany(LayananPatner::class);
     }
     
 }

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\patner\addpatner;
+use App\Models\layanan;
+use App\Models\LayananPatner;
 use App\Models\Patner;
 use App\Models\User;
 use App\Tools\tools;
@@ -75,6 +77,13 @@ class PatnerController extends Controller
                 $patner = Patner::find($request->uniq);
                 $patner->update($request->all());
                 $patner->save();
+
+                $user = User::where('patner_id', $patner->id)->first();
+                $user->update([
+                    "name" => $patner->email,
+                    "email" => $patner->email,
+                ]);
+                $user->save();
                 DB::commit();
             } catch (\Throwable $th) {
                 DB::rollBack();
@@ -101,5 +110,52 @@ class PatnerController extends Controller
          } catch (\Throwable $th) {
              //throw $th;
          }
+    }
+
+    public function layananPatner($id){
+        $data= [];
+        $data['title'] = " Layanan Patner";
+        $data['patner'] = Patner::with('layanan')->find($id);
+        $data['layananIds'] = $data['patner']->layanan->pluck('layanan_id')->toArray();
+        $data['layanan'] = layanan::all();
+        return view('patner.layanan-patner',$data);
+    }
+
+    public function addLayananPatner(Request $request){
+
+        try {
+            if(is_array($request->tambahan)){
+
+            $layanan = layanan::wherein('id',$request->tambahan)->get();
+            if($layanan){
+                //tambah layananPatner sesuai $layanan->layanan
+                foreach($layanan as $l){
+                    LayananPatner::updateOrCreate ([
+                        'patner_id' => $request->patner_id,
+                        'layanan_id' => $l->id
+                    ],[
+                        'patner_id' => $request->patner_id,
+                        'layanan_id' => $l->id,
+                        'name' => $l->layanan
+                    ]);
+                    LayananPatner::where('patner_id', $request->patner_id)->whereNotIn('layanan_id', $request->tambahan)->delete();
+                }
+            }
+           
+        }else{
+            LayananPatner::where('patner_id', $request->patner_id)->delete();
+        }
+        return response()->json([
+            'status' => true,
+         ]);
+
+        } catch (\Throwable $th) {
+            //throw $th;
+            return response()->json([
+               'status' => false,
+               'message' => $th->getMessage()
+            ]);
+        }
+
     }
 }

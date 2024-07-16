@@ -25,6 +25,9 @@
                     @endif
             </div>
             <div class="smw-card-body  table-responsive">
+                @if(auth()->user()->role != 'Patner') 
+                <button class="btn btn-orange" data-toggle="modal" data-target="#exampleModal" ><i class="fa fa-plus" aria-hidden="true"></i> Input Pembayaran</button>
+                @endif
                 <div class="dataPembayaran mt-2">
                     {!! $riwayat!!}
                 </div>
@@ -105,29 +108,17 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    @if(@auth()->user()->role == 'Patner')
-                    <!-- <div class="form-group vr-form">
-                        <label for="recipient-name" style="font-size: 16px; " class=" col-form-label">Nama Patner:</label>
-                        <label class="form-control">{{$user->nama_patner}}</label>
-                    </div> -->
-                    @endif
+                  
                     @csrf
-                    @if(@auth()->user()->role == 'Patner')
-
-                    <table class="table table-striped">
-                        <tr>
-                            <th>Nama</th>
-                            <td>{{$user->nama_patner}}</td>
-                        </tr>
-                        <tr>
-                            <th>Total Hutang</th>
-                            <td>{{$user->hutang()}}</td>
-                        </tr>
-                    </table>
-                    @endif
-                    @if(auth()->user()->role == 'Patner')
-                    <input type="hidden" name="patner_id" value="{{$user->id}}">
-                    @endif
+                    <div id="quantity-input" class="form-group vr-form" >
+                        <label  for="message-text" style="font-size: 16px;" class=" col-form-label">Pilih Partner</label>
+                        <select name="patner_id" class="form-control" id="">
+                            <option value="" selected disabled>Pilih Partner</option>
+                            @foreach($patners as $patner)
+                                <option value="{{$patner->id}}">{{$patner->nama_patner}} - {{$patner->hutang()}}</option>
+                            @endforeach
+                        </select>
+                    </div>
                     <div id="quantity-input" class="form-group vr-form" >
                         <label  for="message-text" style="font-size: 16px;" class=" col-form-label">Bank</label>
                         <input type="text" class="form-control msgbank" name="bank" placeholder=" Mandiri..."  id="bank">
@@ -178,6 +169,12 @@
                 </div>
                 <div class="modal-body">
                     <table class="table table-striped table-bordered">
+                        @if(auth()->user()->role != 'Patner')
+                        <tr>
+                            <th>Partner</th>
+                            <td id="norefModal"></td>
+                        </tr>
+                        @endif
                         <tr>
                             <th>Nomor Referensi</th>
                             <td id="norefModal"></td>
@@ -267,6 +264,8 @@
         var bukti = $(this).data('bukti');
         var hutang = $(this).data('hutang');
         var status = $(this).data('status');
+        var patner = $(this).data('patner');
+
 
         $('#norefModal').text(noref);
         $('#tglModal').text(tgl);
@@ -275,7 +274,12 @@
         $('#atas_namaModal').text(atasNama);
         $('#jumlahModal').text(jumlah);
         $('#hutangModal').text(hutang);
-        $('#buktiModal').html('<a href="' + bukti + '" target="_blank">Lihat Bukti</a>');
+        $('#patnerModal').text(patner);
+        if(bukti != "http://localhost:8000/storage"){
+            $('#buktiModal').html('<a href="' + bukti + '" target="_blank">Lihat Bukti</a>');
+        }else{
+            $('#buktiModal').text('-');
+        }
         $('#statusModal').html(status);
     });
 

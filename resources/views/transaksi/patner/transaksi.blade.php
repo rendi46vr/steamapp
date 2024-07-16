@@ -33,6 +33,12 @@ Data Transaksi
                 <h3 class="text-dark">{{session('success')}}</h5>
                     @endif
             </div>
+            @if(auth()->user() != "Patner")
+                <div>
+                    <a target="_blank" class="btn btn-orange" href="{{url('cetak-tagihan/'.$user->id    )}}"><i class="fa fa-plus" aria-hidden="true"></i> Cetak Transaksi</a>
+                    <a  class="btn btn-orange" href="{{url('download-tagihan/'.$user->id    )}}"><i class="fa fa-download" aria-hidden="true"></i> Download PDF</a>
+                </div>
+            @endif
             <div class="smw-card-body dataTransaksi table-responsive">
                 {!! $transaksi !!}
             </div>

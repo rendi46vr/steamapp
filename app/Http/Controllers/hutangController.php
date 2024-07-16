@@ -20,6 +20,7 @@ class hutangController extends Controller
         $data['title'] = "Riwayat Pembayaran" ;
 
         $data['riwayat'] = $this->tableriwayatbayar(1, false, false,1);
+        $data['patners'] = Patner::where('hutang','<>',0)->get();
         try {
             if(Session::has('PatnerID')){
                 $data['user'] = Patner::find(Session::get('PatnerID'));
@@ -102,7 +103,7 @@ class hutangController extends Controller
 
     }
 
-    public function requestbayar(Request  $request){
+    public function requestbayar(Request $request){
         // Validate the incoming request data
         $validator = Validator::make($request->all(), [
             // Define your validation rules here
@@ -110,7 +111,7 @@ class hutangController extends Controller
             'norek' => 'nullable|max:100',
             'bank' => 'nullable|max:100',
             'atas_nama' => 'nullable|max:100',
-            'bukti' => 'required|file|mimes:jpg,png,pdf|max:6048',
+            'bukti' => 'file|mimes:jpg,png,pdf|max:6048',
             'ket' => 'nullable',
         ]);
 
@@ -141,14 +142,22 @@ class hutangController extends Controller
         $bayar->ket = $request->input('ket');
         $bayar->hutang_saat_bayar = $patner->hutang;
         $bayar->patner_id = $patner->id;
+        if(auth()->user()->role != "Patner"){
+            $bayar->status = 1;
+        }
         $bayar->save();
         
         
         $patner->hutang -= $request->input('jumlah');
         $patner->save();
         //send push notification
-        $notif = new NotifController();
-        $notif->NotifPengajuanPembayaran($bayar->id);
+        if(auth()->user()->role == "Patner"){
+            $notif = new NotifController();
+            $notif->NotifPengajuanPembayaran($bayar->id);
+        }else{
+            return $this->tableriwayatbayar(1, false, true,1);
+
+        }
         // Return a success response
         return response()->json([
             'success' => true,
@@ -225,5 +234,23 @@ class hutangController extends Controller
         }
         
         return $this->tableriwayatbayar(1, false, true,0);
+    }
+
+    public function inputBayar(){
+        // index hutang
+        
+        $data = [];
+        $data['title'] = "Request Bayar" ;
+        $data['riwayat'] = $this->tableriwayatbayar(1, false, false,0);
+        try {
+            if(Session::has('PatnerID')){
+                $data['user'] = Patner::find(Session::get('PatnerID'));
+            }else{
+                $data['user'] = auth()->user()->patner;
+            }
+        } catch (\Throwable $th) {
+            return redirect("/login");
+        }
+        return view('patner.pembayaran.pembayaran', $data);
     }
 }

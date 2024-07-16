@@ -23,7 +23,15 @@ class request extends FormRequest
      */
     public function rules()
     {
-      
+      if(auth()->user()->role != 'Patner'){
+        return $data = [
+            'jumlah' => 'numeric',
+            'patner_id' => 'required|exists:patners,id',
+            'nowa' => 'required|regex:/^[0-9]+$/|digits_between:10,15',
+            'alamat' => 'max:255',
+            'email' => 'email|max:255',];
+
+      }
      return   $data = [
             'jumlah' => 'numeric',
             'nowa' => 'required|regex:/^[0-9]+$/|digits_between:10,15',

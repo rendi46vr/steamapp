@@ -230,6 +230,8 @@ if ($pay->metpem == "tunai" || $pay->metpem == "hutang") {
                                     @endif
                                     <a href="{{url('/form-order/'.$pay->layanan->slug)}}" class="btn btn-secondary btn-block text-white mt-2">
                                         Order Lagi </a>
+                                        <a href="{{url('/order')}}" class="btn btn-secondary btn-block text-white mt-2">
+                                        Kembali ke Daftar Order </a>
                                 </div>
                                 @endif
                             </div>

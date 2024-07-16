@@ -20,12 +20,6 @@
                 <h3 class="text-dark">{{session('success')}}</h5>
                     @endif
             </div>
-            @if(auth()->user()->role == 'Patner') 
-                <div class="alert alert-info pb-0 mt-2 mb-1" role="alert">
-                    <p> NOTE : Input pembayaran dapat dilakukan ketika Hutang lebih dari 0 Rupiah. Total Hutang Anda saat ini {{$user->hutang()}}</p>
-                </div>
-
-            @endif
             <div class="smw-card-body  table-responsive">
                 @if(auth()->user()->role == 'Patner') 
                 <button class="btn btn-orange" @if($user->hutang > 0) data-toggle="modal" data-target="#exampleModal" @else disabled @endif><i class="fa fa-plus" aria-hidden="true"></i> Input Pembayaran</button>

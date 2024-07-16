@@ -13,7 +13,9 @@ use App\Models\layanan;
 use App\Http\Controllers\pembelianCon;
 use App\Models\Patner;
 use App\Tools\tools;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Symfony\Component\CssSelector\Node\FunctionNode;
 
 class memberController extends Controller
 {
@@ -100,7 +102,7 @@ class memberController extends Controller
                     $patner= Patner::find($tjual->patner_id);
                     $patner->hutang = $patner->hutang + $tjual->totalbayar;
                     $patner->save();
-                    $pc->sendNotifPartnership($tjual->id, false);
+                    // $pc->sendNotifPartnership($tjual->id, false);
                 }
                 return response()->json([
                     "success" => true,
@@ -141,5 +143,29 @@ class memberController extends Controller
             Session::put("navbarhide", true);
         }
         return redirect()->back();
+    }
+
+    public function cetaklaporan($patner_id){
+        $patner = Patner::find($patner_id);
+        $transaksi = tjual::where('patner_id', $patner_id)->where('status_bayar', 0)->where()->get();
+        $data=[];
+        $data['patner']=$patner;
+        $data['transaksi'] = $transaksi;
+
+        $pdf = Pdf::loadView('patner.pembayaran.cetak-tagihan',$data)->setPaper('a4');
+        return $pdf->stream('pdf');
+
+    }
+
+    public function downloadlaporan($patner_id){
+        $patner = Patner::find($patner_id);
+        $transaksi = tjual::where('patner_id', $patner_id)->where('status_bayar', 0)->get();
+        $data=[];
+        $data['patner']=$patner;
+        $data['transaksi'] = $transaksi;
+
+        $pdf = Pdf::loadView('patner.pembayaran.cetak-tagihan',$data)->setPaper('a4');
+        return $pdf->download('Laporan-Transaksi.pdf');
+
     }
 }

@@ -116,7 +116,7 @@ class PatnerPageCotroller extends Controller
         }
         $transaksi = $transaksi->where(["status"=> "pending", "patner_id" => auth()->user()->patner_id])->orderby('created_at', 'desc')->paginate(20, ['*'], null, $page);
         $pending = true;
-        $pagination = tools::ApiPagination($transaksi->lastPage(), $page, 'pagetorder');
+        $pagination = tools::ApiPagination($transaksi->lastPage(), $page, 'pagepatnerorder');
         return view("transaksi.patner.tabletorder", compact("transaksi", "pagination", "pending"))->render();
     }
 

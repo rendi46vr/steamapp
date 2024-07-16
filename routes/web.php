@@ -87,6 +87,9 @@ Route::group(['middleware' => ['auth']], function () {
         Route::post('confirmlsg/{id}', [UserController::class, "confirmlsg"]);
         Route::post('admincek/{slug}', [UserController::class, "admincekproses"]);
 
+        //kirim tagihan
+        Route::post('kirimtagihan/{id}', [UserController::class, "kirimtagihan"]);
+
         //data langganan
         Route::post('langganan/{slug}', [langgananController::class, 'pakaiLangganan']);
         Route::get('langganan-detail/{slug}', [langgananController::class, 'langgananDetail']);
@@ -123,6 +126,8 @@ Route::group(['middleware' => ['auth']], function () {
             Route::post('delpatner/{id}', [PatnerController::class, "delpatner"]);
             Route::post('editpatner', [PatnerController::class, "editpatner"]);
             Route::post('lstatus/{id}', [PatnerController::class, "lstatus"]);
+            Route::get('layanan/{id}', [PatnerController::class, "layananPatner"]);
+            Route::post('layanan/{id}', [PatnerController::class, "addLayananPatner"]);
         }); 
 
 
@@ -171,6 +176,8 @@ Route::group(['middleware' => ['auth']], function () {
 
     });
     Route::group(['middleware' => ['cek_login:Patner,Admin']], function () {
+        Route::get('cetak-tagihan/{patner_id}', [memberController::class, "cetaklaporan"]);
+        Route::get('download-tagihan/{patner_id}', [memberController::class, "downloadlaporan"]);
         Route::get('dashboard', [userCon::class, "index"]);
         Route::post('detail/{id}', [UserController::class, "detail"]);
         Route::get('download-tiket/{slug}', [pembelianCon::class, "downloadQr"]);
@@ -189,8 +196,6 @@ Route::group(['middleware' => ['auth']], function () {
         Route::post('pagepembayaran/{page}', [hutangController::class, "pagepembayaran"]);
         Route::post('searchpembayaran/{serach}', [hutangController::class, "searchpembayaran"]);
         Route::get('rinciantransaksi/{patner?}', [hutangController::class, "rinciantransaksi"]);
-        
-       
     });
 
 });

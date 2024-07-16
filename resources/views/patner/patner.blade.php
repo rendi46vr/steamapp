@@ -92,6 +92,13 @@
             }
         });
     });
+
+    $(".sendBill").on("click", function(){
+       return confirm("Kirim Tagihan ke "+$(this).data("name")+"?","Tagihan Berhasil Dikirim","Tagihan Gagal Dikirim","kirimtagihan/"+$(this).data("ind")),(res)=>{
+
+       };
+    })
+
 </script>
 <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <form id="patner/addpatner">

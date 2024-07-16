@@ -226,7 +226,6 @@ use App\Tools\tools;
     }
     $("input[type=checkbox]").on("click", checkedData);
     $(document).on("change", "#layanan_tambahan", function() {
-        console.log("asldjldjlk")
     });
     @if(!isset($patner))
         $(document).on("change", ".msgplat", function() {

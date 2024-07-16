@@ -101,9 +101,11 @@
         </button>
         <div class="collapse navbar-collapse" id="collapsibleNavId">
             <ul class="navbar-nav ml-auto">
+            @if(!auth()->check() || auth()->user()->role != "Patner")
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{url('/')}}">Home</a>
+                    <a class="nav-link text-dark" href="{{ url('/') }}">Home</a>
                 </li>
+            @endif
                 @if(auth()->user())
                     @if(auth()->user()->role != "Patner")
                         <li class="nav-item dropdown">
@@ -234,4 +236,4 @@
 
 </body>
 
-</html>
+</html> 

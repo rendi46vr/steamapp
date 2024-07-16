@@ -21,6 +21,8 @@ use App\Mail\sendMail;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\pembelianCon;
 use App\Models\layanan;
+use App\Models\Patner;
+use Illuminate\Support\Facades\Http;
 
 class UserController extends Controller
 {
@@ -558,6 +560,51 @@ class UserController extends Controller
             "success" => true,
             "data" => $data
         ]);
+    }
+
+    public function kirimtagihan($id){
+        //
+        Http::get('http://vittindo.my.id/steamapp/kirimtagihan/'. $id);
+        return true;
+        try {
+            //code...
+            $patner = Patner::with('bayar','tjual')->find($id);
+            //ambil total transaksi dan total nominalnya berdasarkan kolom totalbayar di tjuals berhasil dari relasi tjual
+            $jumlahTransaksi = $patner->tjual->where('status', 'berhasil')->count();
+            $totalNominalTransaksi = $patner->tjual->where('status', 'berhasil')->sum('totalbayar');
+            $jumlahPembayaran = $patner->bayar->count();
+            $totalNominalBayar = $patner->bayar->sum('jumlah');
+            $sisaHutang = $totalNominalTransaksi - $totalNominalBayar;
+
+            // Format data menjadi bentuk rupiah
+            $totalNominalTransaksiFormatted = tools::rupiah($totalNominalTransaksi);
+            $totalNominalBayarFormatted = tools::rupiah($totalNominalBayar);
+            $sisaHutangFormatted = tools::rupiah($sisaHutang);
+
+            $textPenagihan = "Halo ".$patner->nama_patner.",\n\n" .
+            "Kami dari Smarwax Palembang ingin menginformasikan terkait transaksi dan pembayaran yang telah dilakukan oleh ".$patner->nama_patner.". Berikut adalah rincian lengkapnya:\n\n" .
+            "- *Jumlah Transaksi:* $jumlahTransaksi kali\n" .
+            "- *Total Nominal Transaksi:* $totalNominalTransaksiFormatted\n" .
+            "- *Jumlah Pembayaran:* $jumlahPembayaran kali\n" .
+            "- *Total Nominal Pembayaran:* $totalNominalBayarFormatted\n" .
+            "- *Sisa Hutang:* $sisaHutangFormatted\n\n" .
+            "Kami mengharapkan agar ".$patner->nama_patner." dapat segera menyelesaikan sisa hutang yang tercatat sebesar $sisaHutangFormatted.\n\n" .
+            "Detail transaksi bisa diakses di: http://localhost:8000/rinciantransaksi .\n\n" .
+            "Jika Anda memerlukan informasi lebih lanjut atau memiliki pertanyaan, silakan hubungi kami di nomor WhatsApp ini.\n\n" .
+            "Terima kasih atas perhatian dan kerjasamanya.\n\n" .
+            "Hormat kami,\n" .
+            "Smarwax Palembang";
+            $data = Http::post(env('WA_URL') . "kirimpesan", [
+                "idclient" => intval(env('WA_IDCLIENT')),
+                "number" => $patner->nowa,
+                "pesan" => $textPenagihan,
+            ]);
+
+        } catch (\Throwable $th) {
+            return false;
+        }
+
+        return true;
     }
 
     

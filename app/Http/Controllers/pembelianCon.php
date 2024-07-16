@@ -22,6 +22,7 @@ use App\Models\tjual2;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use App\Http\Controllers\PlatGratisController;
+use App\Models\LayananPatner;
 use App\Models\logwa;
 use App\Models\Patner;
 use App\Models\PlatGratis;
@@ -42,8 +43,14 @@ class pembelianCon extends Controller
                 return redirect('tiket/' . $data->id);
             }
             return redirect('pembayaran/' . session::get('bayar'));
+            
         }
-        $layanan = layanan::where('isaktif', 1)->get();
+        if (Auth::check() && Auth::user()->role == "Patner") {
+            $getId = LayananPatner::with('layanan')->where('patner_id', Auth::user()->patner_id)->pluck('layanan_id')->toArray();
+            $layanan = Layanan::whereIn('id', $getId)->where('isaktif', 1)->get();
+        } else {
+            $layanan = Layanan::where('isaktif', 1)->get();
+        }
         return view('index', compact('layanan'));
     }
     public function formorder($slug)
@@ -651,7 +658,7 @@ class pembelianCon extends Controller
             $nota = PDF::loadView("download", compact("tjual", "tjual1", "addon"));
             $nota->setPaper(array(0, 0, 250, 340 + $widthplus ));
             $tempFilePathnota = storage_path('app/public/nota.pdf');
-            return $nota->stream();
+            // return $nota->stream();
             $nota->save($tempFilePathnota);
 
             $notapdf = file_get_contents($tempFilePathnota);
@@ -667,7 +674,7 @@ class pembelianCon extends Controller
                     //buar qr tiket jika perlu
                     $pdf = PDF::loadView('download2', compact('tjual', 'tikets'));
                     $pdf->setPaper(array(0, 0, 250, 380));
-                    $tempFilePath = storage_path('app/public/qrcode.pdf');
+                    $tempFilePath = storage_path('app/public/qrcode'.date('YmdHis').'.pdf');
                     $pdf->save($tempFilePath);
                     $qrpdf = file_get_contents($tempFilePath);
                     $text1 = "🔍Qrcode Pembelian.  \n ";
